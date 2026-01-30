@@ -28,8 +28,8 @@ import os
 # 初始化 Supabase 客户端
 supabase: Client = None
 if settings.SUPABASE_URL and settings.SUPABASE_KEY:
-    # Vercel Deployment Trigger: 2026-01-30 23:21 - DEPENDENCY FIX
-    # Added aiohttp to requirements.txt
+    # Vercel Deployment Trigger: 2026-01-30 23:28 - SQLITE WAL MODE FIX
+    # Re-packing DB in DELETE mode and copying to /tmp for writable access
     supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
 
 # 配置日志：默认仅输出到控制台
@@ -47,10 +47,25 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """应用生命周期管理"""
+    import shutil
     # 启动
     logger.info("=" * 50)
     logger.info("MatchStats 服务启动中...")
     
+    # Vercel 环境处理：将只读 DB 拷贝到可写的 /tmp 目录
+    if os.environ.get("VERCEL"):
+        temp_db = "/tmp/matchstats.db"
+        source_db = settings.DB_PATH
+        if os.path.exists(source_db):
+            try:
+                shutil.copy2(source_db, temp_db)
+                settings.DB_PATH = temp_db
+                logger.info(f"Vercel: 已将数据库从 {source_db} 拷贝至 {temp_db}")
+            except Exception as e:
+                logger.error(f"Vercel: 拷贝数据库失败: {e}")
+        else:
+            logger.error(f"Vercel: 源数据库文件不存在: {source_db}")
+
     # 初始化数据库
     await init_db()
 
