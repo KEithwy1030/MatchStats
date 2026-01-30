@@ -8,6 +8,7 @@ import logging
 
 from app.models import *
 from app.repositories import FDRepository, SportteryRepository, LogRepository
+from app.config import settings
 
 logger = logging.getLogger(__name__)
 

@@ -28,8 +28,8 @@ import os
 # 初始化 Supabase 客户端
 supabase: Client = None
 if settings.SUPABASE_URL and settings.SUPABASE_KEY:
-    # Vercel Deployment Trigger: 2026-01-31 00:10 - PLAIN TEXT DEBUG
-    # Switched to PlainTextResponse for /api/v1/debug to bypass JSON errors
+    # Vercel Deployment Trigger: 2026-01-31 00:15 - IMPORT FIXED
+    # Restored missing settings import in app/api/__init__.py
     supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
 
 # 配置日志：默认仅输出到控制台
