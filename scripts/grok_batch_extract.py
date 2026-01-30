@@ -1,13 +1,43 @@
-
 import asyncio
 from playwright.async_api import async_playwright
 import time
 import sys
 import os
+from dotenv import load_dotenv
+from supabase import create_client, Client
 
 # 设置输出编码
 if sys.stdout:
     sys.stdout.reconfigure(encoding='utf-8')
+
+# 加载环境变量
+load_dotenv()
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+# 初始化 Supabase
+supabase: Client = None
+if SUPABASE_URL and SUPABASE_KEY:
+    supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+    print("✅ Supabase 客户端已初始化")
+
+async def save_to_supabase(home_team, away_team, prediction_text):
+    """保存预测到 Supabase"""
+    if not supabase:
+        print("⚠️ Supabase 未配置，跳过上传")
+        return
+    
+    try:
+        data = {
+            "home_team_name": home_team,
+            "away_team_name": away_team,
+            "raw_prediction_text": prediction_text,
+            "match_date": time.strftime("%Y-%m-%d %H:%M:%S")
+        }
+        supabase.table("match_predictions").insert(data).execute()
+        print(f"✅ {home_team} vs {away_team} 已成功推送到云端数据库")
+    except Exception as e:
+        print(f"❌ 上传到 Supabase 失败: {e}")
 
 async def extract_grok_predictions(matches):
     """接管浏览器并批量抓取比赛预测"""
@@ -106,6 +136,9 @@ async def extract_grok_predictions(matches):
 
                 all_results[f"{home} vs {away}"] = final_text
                 print(f"📄 {home} vs {away} 提取成功 (长度: {len(final_text)})")
+                
+                # 同步到 Supabase
+                await save_to_supabase(home, away, final_text)
                 
                 # 稍微等待，避免操作过快
                 await asyncio.sleep(5)

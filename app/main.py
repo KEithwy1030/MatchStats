@@ -11,9 +11,11 @@ if sys.platform == 'win32':
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
 from contextlib import asynccontextmanager
 import uvicorn
+from supabase import create_client, Client
 
 from app.config import settings, ensure_data_dir, ensure_logs_dir
 from app.database import init_db
@@ -22,6 +24,11 @@ from app.scheduler import scheduler
 from app.web import web_router
 from fastapi.staticfiles import StaticFiles
 import os
+
+# 初始化 Supabase 客户端
+supabase: Client = None
+if settings.SUPABASE_URL and settings.SUPABASE_KEY:
+    supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
 
 # 配置日志
 log_dir = ensure_logs_dir()
@@ -70,6 +77,37 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan
 )
+
+@app.get("/predictions", response_class=HTMLResponse)
+async def get_predictions(request: Request):
+    """获取云端博彩预测列表"""
+    if not supabase:
+        return "<h1>Supabase 未配置</h1>"
+    
+    try:
+        response = supabase.table("match_predictions").select("*").order("created_at", desc=True).execute()
+        predictions = response.data
+        
+        html_content = "<html><head><meta charset='utf-8'><title>比赛预测</title><style>body{font-family:sans-serif;max-width:800px;margin:20px auto;line-height:1.6;background:#f4f7f6;padding:0 15px;} .card{background:#fff;border-radius:12px;box-shadow:0 4px 6px rgba(0,0,0,0.1);padding:20px;margin-bottom:25px;border-left:5px solid #2ecc71;} h2{color:#2c3e50;margin-top:0;} pre{white-space:pre-wrap;background:#fafafa;padding:15px;border-radius:6px;border:1px solid #eee;font-size:14px;color:#34495e;}</style></head><body>"
+        html_content += "<h1>⚽ 比赛深度预测 (Grok)</h1>"
+        
+        if not predictions:
+            html_content += "<p>暂无预测数据，请运行抓取脚本。</p>"
+        
+        for p in predictions:
+            html_content += f"""
+            <div class='card'>
+                <h2>{p['home_team_name']} vs {p['away_team_name']}</h2>
+                <p><small style='color:#7f8c8d;'>时间: {p.get('created_at', '未知')}</small></p>
+                <hr style='border:none;border-top:1px solid #eee;margin:15px 0;'>
+                <pre>{p['raw_prediction_text']}</pre>
+            </div>
+            """
+        
+        html_content += "</body></html>"
+        return html_content
+    except Exception as e:
+        return f"<h1>错误: {str(e)}</h1>"
 
 # 注册路由
 app.include_router(web_router)      # Web界面路由（包含首页）

@@ -19,6 +19,10 @@ class Settings(BaseSettings):
     # API Token
     FD_API_TOKEN: str = ""
 
+    # Supabase (Cloud Database)
+    SUPABASE_URL: str = ""
+    SUPABASE_KEY: str = ""
+
     # 数据库
     DB_PATH: str = "./data/matchstats.db"
 
