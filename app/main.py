@@ -28,8 +28,8 @@ import os
 # 初始化 Supabase 客户端
 supabase: Client = None
 if settings.SUPABASE_URL and settings.SUPABASE_KEY:
-    # Vercel Deployment Trigger: 2026-01-30 17:48
-# Fix: Strictly pinning httpx to 0.27.2 and upgrading supabase client to handle proxy args
+    # Vercel Deployment Trigger: 2026-01-30 22:55 - Build Fix
+# Force clear Vercel build cache by changing a core file
 supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
 
 # 配置日志：默认仅输出到控制台
