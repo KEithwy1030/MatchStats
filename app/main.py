@@ -28,7 +28,9 @@ import os
 # 初始化 Supabase 客户端
 supabase: Client = None
 if settings.SUPABASE_URL and settings.SUPABASE_KEY:
-    supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+    # Vercel Deployment Trigger: 2026-01-30 17:48
+# Fix: Strictly pinning httpx to 0.27.2 and upgrading supabase client to handle proxy args
+supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
 
 # 配置日志：默认仅输出到控制台
 # 只有在环境变量中明确指定了匹配的路径时才尝试写文件
