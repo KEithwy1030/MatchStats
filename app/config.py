@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     SUPABASE_KEY: str = ""
 
     # 数据库
-    DB_PATH: str = "./data/matchstats.db"
+    DB_PATH: str = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "matchstats.db")
 
     # 服务
     PORT: int = 9999

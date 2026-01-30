@@ -18,6 +18,10 @@ class BaseRepository:
 
     async def get_connection(self):
         """获取数据库连接"""
+        import os
+        # Vercel 环境下以只读模式打开，防止权限问题
+        if os.environ.get("VERCEL"):
+            return await connect(f"file:{self.db_path}?mode=ro", uri=True)
         return await connect(self.db_path)
 
 

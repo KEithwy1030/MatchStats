@@ -1,7 +1,7 @@
 
-# 数据库文件（以后用云端 Supabase 代替）
-*.db
-*.sqlite
+# 数据库文件（生产环境目前打包部署，未来建议迁移至 Supabase）
+# *.db (暂时放开，以便 Vercel 预览有数据)
+# *.sqlite
 
 # 敏感脚本测试结果
 gemini_test_result.txt
