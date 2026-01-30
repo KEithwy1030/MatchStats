@@ -1,0 +1,17 @@
+Searching for LIVE/IN_PLAY matches...
+Found LIVE match: Arsenal FC vs FK Kairat (ID: 551980)
+
+Fetching ALL details for match ID: 551980...
+==================================================
+DATA AVAILABILITY REPORT
+==================================================
+Home Lineup Available: False
+  - Keys in homeTeam: ['id', 'name', 'shortName', 'tla', 'crest']
+Away Lineup Available: False
+Home Coach Available: False
+Away Coach Available: False
+Goals Available: False (Count: 0)
+Referees Available: True
+Venue Available: None
+Score Available: {'winner': 'HOME_TEAM', 'duration': 'REGULAR', 'fullTime': {'home': 2, 'away': 1}, 'halfTime': {'home': 0, 'away': 0}, 'regularTime': {'home': 0, 'away': 0}, 'extraTime': {'home': 0, 'away': 0}, 'penalties': {'home': 0, 'away': 0}}
+==================================================

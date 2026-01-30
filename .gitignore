@@ -1,0 +1,26 @@
+
+# 数据库文件（以后用云端 Supabase 代替）
+*.db
+*.sqlite
+
+# 敏感脚本测试结果
+gemini_test_result.txt
+prediction_grok_*.txt
+
+# Python 虚拟环境
+venv/
+__pycache__/
+*.pyc
+
+# 包含敏感路径或 API 的测试脚本（可选）
+scripts/setup_permanent_bot.py
+scripts/test_gemini_api.py
+scripts/test_api_final.py
+
+# 环境变量（存放 API Key 的地方）
+.env
+
+# 开发者的配置文件
+.agent/
+.gemini/
+.cursor/
