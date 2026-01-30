@@ -30,15 +30,9 @@ supabase: Client = None
 if settings.SUPABASE_URL and settings.SUPABASE_KEY:
     supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
 
-# 配置日志
+# 配置日志：默认仅输出到控制台
+# 只有在环境变量中明确指定了匹配的路径时才尝试写文件
 handlers = [logging.StreamHandler()]
-# 仅在非 Vercel 环境下尝试使用文件日志
-if not os.environ.get("VERCEL"):
-    try:
-        log_dir = ensure_logs_dir()
-        handlers.append(logging.FileHandler(f'{log_dir}/matchstats.log', encoding='utf-8'))
-    except Exception as e:
-        print(f"Failed to initialize file logging: {e}")
 
 logging.basicConfig(
     level=getattr(logging, settings.LOG_LEVEL),
@@ -58,14 +52,6 @@ async def lifespan(app: FastAPI):
     # 初始化数据库
     await init_db()
 
-    # 启动调度器 (Vercel 环境下禁用)
-    if not os.environ.get("VERCEL"):
-        logger.info(f"数据库: {settings.DB_PATH}")
-        logger.info(f"端口: {settings.PORT}")
-        logger.info(f"监控联赛: {', '.join(settings.monitored_leagues_list)}")
-        scheduler.start()
-        logger.info("MatchStats 服务已启动")
-    else:
         logger.info("Vercel 环境：跳过调度器启动")
 
     logger.info("=" * 50)
