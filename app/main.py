@@ -54,6 +54,13 @@ async def lifespan(app: FastAPI):
     # 初始化数据库
     await init_db()
 
+    # 启动调度器 (Vercel 环境下禁用)
+    if not os.environ.get("VERCEL"):
+        logger.info(f"数据库: {settings.DB_PATH}")
+        logger.info(f"端口: {settings.PORT}")
+        scheduler.start()
+        logger.info("MatchStats 服务已启动")
+    else:
         logger.info("Vercel 环境：跳过调度器启动")
 
     logger.info("=" * 50)
