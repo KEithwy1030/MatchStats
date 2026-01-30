@@ -31,11 +31,14 @@ if settings.SUPABASE_URL and settings.SUPABASE_KEY:
     supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
 
 # 配置日志
-log_dir = ensure_logs_dir()
 handlers = [logging.StreamHandler()]
-# 仅在非 Vercel 环境下使用文件日志
+# 仅在非 Vercel 环境下尝试使用文件日志
 if not os.environ.get("VERCEL"):
-    handlers.append(logging.FileHandler(f'{log_dir}/matchstats.log', encoding='utf-8'))
+    try:
+        log_dir = ensure_logs_dir()
+        handlers.append(logging.FileHandler(f'{log_dir}/matchstats.log', encoding='utf-8'))
+    except Exception as e:
+        print(f"Failed to initialize file logging: {e}")
 
 logging.basicConfig(
     level=getattr(logging, settings.LOG_LEVEL),
@@ -123,9 +126,12 @@ app.include_router(system_router)   # 系统 API
 
 # 静态文件
 static_dir = os.path.join(os.path.dirname(__file__), "static")
-if not os.path.exists(static_dir):
+if not os.environ.get("VERCEL") and not os.path.exists(static_dir):
     os.makedirs(static_dir)
-app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
+# 即使文件夹不存在，在 Vercel 上也要挂载，否则容易报错
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 
 def main():
