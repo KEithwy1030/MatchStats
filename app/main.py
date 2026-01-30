@@ -28,8 +28,8 @@ import os
 # 初始化 Supabase 客户端
 supabase: Client = None
 if settings.SUPABASE_URL and settings.SUPABASE_KEY:
-    # Vercel Deployment Trigger: 2026-01-30 23:15 - FINAL STABLE BUILD
-    # Fix: Corrected Python indentation after identity verification
+    # Vercel Deployment Trigger: 2026-01-30 23:21 - DEPENDENCY FIX
+    # Added aiohttp to requirements.txt
     supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
 
 # 配置日志：默认仅输出到控制台
