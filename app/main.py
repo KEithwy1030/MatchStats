@@ -28,8 +28,8 @@ import os
 # 初始化 Supabase 客户端
 supabase: Client = None
 if settings.SUPABASE_URL and settings.SUPABASE_KEY:
-    # Vercel Deployment Trigger: 2026-01-30 23:40 - FULL DEBUG LOGS
-    # Added detailed directory and path logging to solve 500 error
+    # Vercel Deployment Trigger: 2026-01-30 23:55 - DEBUG ENDPOINT ADDED
+    # Added /api/v1/debug to see what's happening inside Vercel
     supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
 
 # 配置日志：默认仅输出到控制台
