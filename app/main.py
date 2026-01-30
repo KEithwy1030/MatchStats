@@ -28,8 +28,8 @@ import os
 # 初始化 Supabase 客户端
 supabase: Client = None
 if settings.SUPABASE_URL and settings.SUPABASE_KEY:
-    # Vercel Deployment Trigger: 2026-01-30 22:55 - Build Fix
-# Force clear Vercel build cache by changing a core file
+    # Vercel Deployment Trigger: 2026-01-30 23:10 - Identity Verified Build
+# This commit uses the correct GitHub email to trigger Vercel deployment
 supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
 
 # 配置日志：默认仅输出到控制台
