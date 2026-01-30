@@ -1,7 +1,10 @@
 import os
 import sys
 
-# 将根目录添加到 Python 路径，确保能找到 app 模块
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+# 强制将当前目录和上级目录加入路径，解决 Vercel 模块找不到的问题
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.insert(0, parent_dir)
+sys.path.insert(0, current_dir)
 
 from app.main import app
