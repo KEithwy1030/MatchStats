@@ -1,0 +1,9 @@
+{
+    "rewrite_dest": "/app/main.py",
+    "rewrites": [
+        {
+            "source": "/(.*)",
+            "destination": "app/main.py"
+        }
+    ]
+}
