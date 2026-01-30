@@ -150,7 +150,13 @@ async def get_debug():
         data_files = os.listdir("/var/task/data") if os.path.exists("/var/task/data") else "data not found"
     except:
         data_files = "error"
-    return PlainTextResponse(f"CWD: {os.getcwd()}\nTASK_FILES: {task_files}\nDATA_FILES: {data_files}\n")
+    try:
+        tmp_files = os.listdir("/tmp") if os.path.exists("/tmp") else "tmp not found"
+        if os.path.exists("/tmp/matchstats.db"):
+            tmp_files.append(f"matchstats.db({os.path.getsize('/tmp/matchstats.db')})")
+    except:
+        tmp_files = "error"
+    return PlainTextResponse(f"CWD: {os.getcwd()}\nDB_PATH: {settings.DB_PATH}\nTASK_FILES: {task_files}\nDATA_FILES: {data_files}\nTMP_FILES: {tmp_files}\n")
 
 @system_router.get("/stats", response_model=StatsResponse)
 async def get_stats():

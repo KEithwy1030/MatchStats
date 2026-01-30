@@ -28,8 +28,8 @@ import os
 # 初始化 Supabase 客户端
 supabase: Client = None
 if settings.SUPABASE_URL and settings.SUPABASE_KEY:
-    # Vercel Deployment Trigger: 2026-01-31 00:20 - MINIMAL DEBUG
-    # Debug endpoint now has zero dependencies to isolate the 500 error
+    # Vercel Deployment Trigger: 2026-01-31 00:25 - SHUTIL COPY FIX
+    # Changed copy2 to copy to avoid permission issues on Vercel /tmp
     supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
 
 # 配置日志：默认仅输出到控制台
@@ -63,7 +63,7 @@ async def lifespan(app: FastAPI):
                 # 拷贝前先确保目录存在并打印大小
                 size = os.path.getsize(source_db)
                 logger.info(f"Vercel: 发现源数据库, 大小: {size} bytes")
-                shutil.copy2(source_db, temp_db)
+                shutil.copy(source_db, temp_db)
                 settings.DB_PATH = temp_db
                 logger.info(f"Vercel: 数据库迁移成功 -> {settings.DB_PATH}")
             except Exception as e:
