@@ -1,5 +1,5 @@
 {
-    "rewrite_dest": "/app/main.py",
+    "version": 2,
     "rewrites": [
         {
             "source": "/(.*)",
