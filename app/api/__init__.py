@@ -141,14 +141,16 @@ async def get_debug():
     """调试信息终端"""
     import os
     from fastapi.responses import PlainTextResponse
-    db_exists = os.path.exists(settings.DB_PATH)
-    tmp_exists = os.path.exists("/tmp/matchstats.db")
-    # 打印 /var/task 的内容
+    # 完全不使用 settings，只看文件系统
     try:
         task_files = os.listdir("/var/task")
     except:
         task_files = "error"
-    return PlainTextResponse(f"CWD: {os.getcwd()}\nDB_PATH: {settings.DB_PATH}\nDB_EXISTS: {db_exists}\nTMP_EXISTS: {tmp_exists}\nTASK_FILES: {task_files}\n")
+    try:
+        data_files = os.listdir("/var/task/data") if os.path.exists("/var/task/data") else "data not found"
+    except:
+        data_files = "error"
+    return PlainTextResponse(f"CWD: {os.getcwd()}\nTASK_FILES: {task_files}\nDATA_FILES: {data_files}\n")
 
 @system_router.get("/stats", response_model=StatsResponse)
 async def get_stats():
