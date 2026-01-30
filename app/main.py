@@ -28,9 +28,9 @@ import os
 # 初始化 Supabase 客户端
 supabase: Client = None
 if settings.SUPABASE_URL and settings.SUPABASE_KEY:
-    # Vercel Deployment Trigger: 2026-01-30 23:10 - Identity Verified Build
-# This commit uses the correct GitHub email to trigger Vercel deployment
-supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+    # Vercel Deployment Trigger: 2026-01-30 23:15 - FINAL STABLE BUILD
+    # Fix: Corrected Python indentation after identity verification
+    supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
 
 # 配置日志：默认仅输出到控制台
 # 只有在环境变量中明确指定了匹配的路径时才尝试写文件
