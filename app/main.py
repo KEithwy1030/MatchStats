@@ -32,13 +32,15 @@ if settings.SUPABASE_URL and settings.SUPABASE_KEY:
 
 # 配置日志
 log_dir = ensure_logs_dir()
+handlers = [logging.StreamHandler()]
+# 仅在非 Vercel 环境下使用文件日志
+if not os.environ.get("VERCEL"):
+    handlers.append(logging.FileHandler(f'{log_dir}/matchstats.log', encoding='utf-8'))
+
 logging.basicConfig(
     level=getattr(logging, settings.LOG_LEVEL),
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler(f'{log_dir}/matchstats.log', encoding='utf-8'),
-        logging.StreamHandler()
-    ]
+    handlers=handlers
 )
 logger = logging.getLogger(__name__)
 
@@ -49,25 +51,29 @@ async def lifespan(app: FastAPI):
     # 启动
     logger.info("=" * 50)
     logger.info("MatchStats 服务启动中...")
-    logger.info(f"数据库: {settings.DB_PATH}")
-    logger.info(f"端口: {settings.PORT}")
-    logger.info(f"监控联赛: {', '.join(settings.monitored_leagues_list)}")
-
+    
     # 初始化数据库
     await init_db()
 
-    # 启动调度器
-    scheduler.start()
+    # 启动调度器 (Vercel 环境下禁用)
+    if not os.environ.get("VERCEL"):
+        logger.info(f"数据库: {settings.DB_PATH}")
+        logger.info(f"端口: {settings.PORT}")
+        logger.info(f"监控联赛: {', '.join(settings.monitored_leagues_list)}")
+        scheduler.start()
+        logger.info("MatchStats 服务已启动")
+    else:
+        logger.info("Vercel 环境：跳过调度器启动")
 
-    logger.info("MatchStats 服务已启动")
     logger.info("=" * 50)
 
     yield
 
     # 关闭
-    logger.info("MatchStats 服务关闭中...")
-    scheduler.stop()
-    logger.info("MatchStats 服务已关闭")
+    if not os.environ.get("VERCEL"):
+        logger.info("MatchStats 服务关闭中...")
+        scheduler.stop()
+        logger.info("MatchStats 服务已关闭")
 
 
 # 创建 FastAPI 应用

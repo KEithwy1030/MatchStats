@@ -4,6 +4,7 @@
 from aiosqlite import connect
 from app.config import settings, ensure_data_dir
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -17,28 +18,35 @@ async def get_db():
 
 async def init_db():
     """初始化数据库表"""
+    # 如果在 Vercel 环境下，跳过本地 SQLite 初始化（因为环境是只读的）
+    if os.environ.get("VERCEL"):
+        logger.info("检测到 Vercel 环境，跳过本地 SQLite 数据库初始化")
+        return
+
     ensure_data_dir()
+    try:
+        conn = await get_db()
+        cursor = await conn.cursor()
 
-    conn = await get_db()
-    cursor = await conn.cursor()
+        # 启用 WAL 模式
+        await cursor.execute("PRAGMA journal_mode=WAL")
+        await cursor.execute("PRAGMA busy_timeout=30000")
 
-    # 启用 WAL 模式
-    await cursor.execute("PRAGMA journal_mode=WAL")
-    await cursor.execute("PRAGMA busy_timeout=30000")
+        # Football-Data 表
+        await _create_fd_tables(cursor)
 
-    # Football-Data 表
-    await _create_fd_tables(cursor)
+        # 竞彩表
+        await _create_sporttery_tables(cursor)
 
-    # 竞彩表
-    await _create_sporttery_tables(cursor)
+        # 日志表
+        await _create_logs_table(cursor)
 
-    # 日志表
-    await _create_logs_table(cursor)
+        await conn.commit()
+        await conn.close()
 
-    await conn.commit()
-    await conn.close()
-
-    logger.info(f"数据库初始化完成: {settings.DB_PATH}")
+        logger.info(f"数据库初始化完成: {settings.DB_PATH}")
+    except Exception as e:
+        logger.error(f"数据库初始化失败: {e}")
 
 
 async def _create_fd_tables(cursor):
