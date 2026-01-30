@@ -137,43 +137,17 @@ async def health():
 
 @system_router.get("/debug")
 async def get_debug():
-    """调试信息接口"""
+    """调试信息终端"""
+    import os
+    from fastapi.responses import PlainTextResponse
+    db_exists = os.path.exists(settings.DB_PATH)
+    tmp_exists = os.path.exists("/tmp/matchstats.db")
+    # 打印 /var/task 的内容
     try:
-        import os
-        import sys
-        import traceback
-        
-        # 强制转换为字符串以防 Pydantic 对象序列化问题
-        db_path = str(settings.DB_PATH)
-        
-        # 检查各种可能路径
-        paths_to_check = [
-            db_path,
-            "/var/task/data/matchstats.db",
-            "/tmp/matchstats.db"
-        ]
-        
-        path_info = {}
-        for p in paths_to_check:
-            try:
-                exists = os.path.exists(p)
-                info = {"exists": exists}
-                if exists:
-                    info["size"] = os.path.getsize(p)
-                path_info[p] = info
-            except Exception as e:
-                path_info[p] = {"error": str(e)}
-
-        return {
-            "status": "debug_ok",
-            "cwd": os.getcwd(),
-            "paths": path_info,
-            "vercel_env": str(os.environ.get("VERCEL", "false")),
-            "python_version": sys.version
-        }
-    except Exception as e:
-        import traceback
-        return {"error": str(e), "traceback": traceback.format_exc()}
+        task_files = os.listdir("/var/task")
+    except:
+        task_files = "error"
+    return PlainTextResponse(f"CWD: {os.getcwd()}\nDB_PATH: {settings.DB_PATH}\nDB_EXISTS: {db_exists}\nTMP_EXISTS: {tmp_exists}\nTASK_FILES: {task_files}\n")
 
 @system_router.get("/stats", response_model=StatsResponse)
 async def get_stats():
