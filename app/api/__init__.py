@@ -139,38 +139,29 @@ async def health():
 async def get_debug():
     """调试信息接口"""
     import os
-    import sys
     
     # 检查各种可能路径
     paths_to_check = [
         settings.DB_PATH,
-        os.path.abspath(settings.DB_PATH),
         "/var/task/data/matchstats.db",
-        "data/matchstats.db",
         "/tmp/matchstats.db"
     ]
     
     path_info = {}
     for p in paths_to_check:
-        exists = os.path.exists(p)
-        info = {"exists": exists}
-        if exists:
-            try:
+        try:
+            exists = os.path.exists(p)
+            info = {"exists": exists}
+            if exists:
                 info["size"] = os.path.getsize(p)
-                info["is_file"] = os.path.isfile(p)
-            except:
-                info["error"] = "could not get info"
-        path_info[p] = info
+            path_info[p] = info
+        except:
+            path_info[p] = {"error": "check failed"}
 
     return {
         "cwd": os.getcwd(),
         "paths": path_info,
-        "sys_path": sys.path,
-        "directory_structure": {
-            ".": os.listdir(".") if os.path.exists(".") else "not found",
-            "data": os.listdir("data") if os.path.exists("data") else "not found",
-            "app": os.listdir("app") if os.path.exists("app") else "not found"
-        }
+        "vercel_env": os.environ.get("VERCEL", "false")
     }
 
 @system_router.get("/stats", response_model=StatsResponse)

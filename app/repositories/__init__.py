@@ -20,7 +20,22 @@ class BaseRepository:
 
     async def get_connection(self):
         """获取数据库连接"""
-        return await connect(self.db_path)
+        import os
+        path = self.db_path
+        
+        # 如果是 Vercel 环境
+        if os.environ.get("VERCEL"):
+            # 如果路径在 /tmp 下，说明已经成功迁移，可以尝试正常打开
+            if path.startswith("/tmp"):
+                try:
+                    return await connect(path)
+                except:
+                    # 如果仍然失败，尝试只读
+                    return await connect(f"file:{path}?mode=ro", uri=True)
+            # 否则，强制以只读模式打开原始文件
+            return await connect(f"file:{path}?mode=ro", uri=True)
+            
+        return await connect(path)
 
 
 class FDRepository(BaseRepository):
