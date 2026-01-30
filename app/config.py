@@ -63,6 +63,8 @@ settings = Settings()
 
 def ensure_data_dir():
     """确保数据目录存在"""
+    if os.environ.get("VERCEL"):
+        return
     data_dir = os.path.dirname(settings.DB_PATH)
     if data_dir and not os.path.exists(data_dir):
         os.makedirs(data_dir, exist_ok=True)
@@ -70,6 +72,8 @@ def ensure_data_dir():
 
 def ensure_logs_dir():
     """确保日志目录存在"""
+    if os.environ.get("VERCEL"):
+        return "/tmp"
     logs_dir = "./logs"
     if not os.path.exists(logs_dir):
         os.makedirs(logs_dir, exist_ok=True)
