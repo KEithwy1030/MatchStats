@@ -28,8 +28,8 @@ import os
 # 初始化 Supabase 客户端
 supabase: Client = None
 if settings.SUPABASE_URL and settings.SUPABASE_KEY:
-    # Vercel Deployment Trigger: 2026-01-31 00:25 - SHUTIL COPY FIX
-    # Changed copy2 to copy to avoid permission issues on Vercel /tmp
+    # Vercel Deployment Trigger: 2026-01-31 00:30 - PREDICTIONS ERROR DEBUG
+    # Added detailed traceback to /predictions to find source of [Errno 16]
     supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
 
 # 配置日志：默认仅输出到控制台
@@ -113,11 +113,12 @@ app = FastAPI(
 @app.get("/predictions", response_class=HTMLResponse)
 async def get_predictions(request: Request):
     """获取云端博彩预测列表"""
-    if not supabase:
-        return "<h1>Supabase 未配置</h1>"
-    
     try:
-        response = supabase.table("match_predictions").select("*").order("created_at", desc=True).execute()
+        import traceback
+        if not supabase:
+            return "<h1>Supabase 未配置</h1>"
+        
+        response = supabase.table("match_predictions").select("*").order("created_at", desc=True).limit(20).execute()
         predictions = response.data
         
         html_content = "<html><head><meta charset='utf-8'><title>比赛预测</title><style>body{font-family:sans-serif;max-width:800px;margin:20px auto;line-height:1.6;background:#f4f7f6;padding:0 15px;} .card{background:#fff;border-radius:12px;box-shadow:0 4px 6px rgba(0,0,0,0.1);padding:20px;margin-bottom:25px;border-left:5px solid #2ecc71;} h2{color:#2c3e50;margin-top:0;} pre{white-space:pre-wrap;background:#fafafa;padding:15px;border-radius:6px;border:1px solid #eee;font-size:14px;color:#34495e;}</style></head><body>"
@@ -139,7 +140,8 @@ async def get_predictions(request: Request):
         html_content += "</body></html>"
         return html_content
     except Exception as e:
-        return f"<h1>错误: {str(e)}</h1>"
+        import traceback
+        return f"<h1>页面错误: {str(e)}</h1><pre>{traceback.format_exc()}</pre>"
 
 # 注册路由
 app.include_router(web_router)      # Web界面路由（包含首页）
