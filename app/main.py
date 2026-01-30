@@ -28,8 +28,8 @@ import os
 # 初始化 Supabase 客户端
 supabase: Client = None
 if settings.SUPABASE_URL and settings.SUPABASE_KEY:
-    # Vercel Deployment Trigger: 2026-01-30 23:28 - SQLITE WAL MODE FIX
-    # Re-packing DB in DELETE mode and copying to /tmp for writable access
+    # Vercel Deployment Trigger: 2026-01-30 23:40 - FULL DEBUG LOGS
+    # Added detailed directory and path logging to solve 500 error
     supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
 
 # 配置日志：默认仅输出到控制台
@@ -55,16 +55,29 @@ async def lifespan(app: FastAPI):
     # Vercel 环境处理：将只读 DB 拷贝到可写的 /tmp 目录
     if os.environ.get("VERCEL"):
         temp_db = "/tmp/matchstats.db"
-        source_db = settings.DB_PATH
+        source_db = os.path.abspath(settings.DB_PATH)
+        logger.info(f"Vercel: 准备迁移数据库. 源路径: {source_db}, 目标路径: {temp_db}")
+        
         if os.path.exists(source_db):
             try:
+                # 拷贝前先确保目录存在并打印大小
+                size = os.path.getsize(source_db)
+                logger.info(f"Vercel: 发现源数据库, 大小: {size} bytes")
                 shutil.copy2(source_db, temp_db)
                 settings.DB_PATH = temp_db
-                logger.info(f"Vercel: 已将数据库从 {source_db} 拷贝至 {temp_db}")
+                logger.info(f"Vercel: 数据库迁移成功 -> {settings.DB_PATH}")
             except Exception as e:
                 logger.error(f"Vercel: 拷贝数据库失败: {e}")
         else:
+            # 探测当前目录
             logger.error(f"Vercel: 源数据库文件不存在: {source_db}")
+            logger.info(f"Vercel: 当前工作目录: {os.getcwd()}")
+            try:
+                logger.info(f"Vercel: 根目录内容: {os.listdir('.')}")
+                if os.path.exists('data'):
+                    logger.info(f"Vercel: data 目录内容: {os.listdir('data')}")
+            except:
+                pass
 
     # 初始化数据库
     await init_db()

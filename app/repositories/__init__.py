@@ -13,8 +13,10 @@ logger = logging.getLogger(__name__)
 class BaseRepository:
     """基础 Repository"""
 
-    def __init__(self):
-        self.db_path = settings.DB_PATH
+    @property
+    def db_path(self):
+        """动态获取数据库路径，确保 Vercel 环境下的 /tmp 迁移有效"""
+        return settings.DB_PATH
 
     async def get_connection(self):
         """获取数据库连接"""
