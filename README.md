@@ -115,5 +115,3 @@ If this project helps you, consider buying me a coffee to keep the server runnin
   <br/>
 </div>
 
----
-*© 2026 MatchStats Team. Powered by Antigravity.*
