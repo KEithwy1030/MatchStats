@@ -182,10 +182,10 @@ class FDRepository(BaseRepository):
                 'team_id': scorer.get('team_id'),
                 'team_name': scorer.get('team_name'),
                 'position': scorer.get('position'),
-                'goals': scorer.get('goals'),
-                'assists': scorer.get('assists'),
-                'penalties': scorer.get('penalties'),
-                'played_matches': scorer.get('played_matches'),
+                'goals': scorer.get('goals') or 0,
+                'assists': scorer.get('assists') or 0,
+                'penalties': scorer.get('penalties') or 0,
+                'played_matches': scorer.get('played_matches') or 0,
                 'updated_at': datetime.now().isoformat()
             }
             # 注意：scorers 表通常没有唯一约束 fd_id，所以手动处理重复
