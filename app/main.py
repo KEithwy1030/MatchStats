@@ -111,45 +111,49 @@ async def get_predictions(request: Request):
 
 @app.middleware("http")
 async def api_key_middleware(request: Request, call_next):
-    """API 访问控制中间件：防盗链与鉴权"""
+    """API 访问控制中间件：严格只读策略"""
+    # 非 API 请求直接放行
     if not request.url.path.startswith("/api"):
         return await call_next(request)
 
-    # 1. 基础白名单：健康检查等
-    if request.url.path.startswith("/api/system/status") or request.url.path == "/api/v1/health":
-        return await call_next(request)
+    # 1. 核心安全策略：禁止所有“写”操作
+    # 按照您的要求，外部调用只允许查看。禁止任何通过 API 修改数据库的行为。
+    if request.method != "GET":
+        from fastapi.responses import JSONResponse
+        return JSONResponse(
+            status_code=403, 
+            content={"detail": "Forbidden: 生产环境 API 仅提供只读访问。修改数据请在服务端项目内部或数据库后台操作。"}
+        )
 
-    # 2. 身份识别：尝试获取 API KEY
+    # 2. 身份与白名单识别
     api_key = request.headers.get("X-API-KEY")
-    is_authenticated = (api_key == settings.INTERNAL_API_KEY)
-    
-    # 3. 来源校验：防盗链 (防止被第三方网站引用或直接刷接口)
     referer = request.headers.get("referer", "")
     origin = request.headers.get("origin", "")
-    # 允许的来源（本地开发环境 + 您的 Vercel 域名）
-    allowed_hosts = [".vercel.app", "localhost", "127.0.0.1", "match-stats"]
-    is_safe_referer = any(host in referer or host in origin for host in allowed_hosts)
+    
+    # 识别是否为“官方/可信”来源 (本地或您的域名)
+    is_trusted_source = any(host in (referer + origin) for host in [".vercel.app", "localhost", "127.0.0.1", "match-stats"])
+    is_admin = (api_key == settings.INTERNAL_API_KEY)
 
-    # 4. 权限决策
-    # 情况 A: 写操作 (POST/PUT/DELETE) -> 必须有 Key
-    if request.method != "GET":
-        if not is_authenticated:
+    # 3. 指定 API 访问控制 (确保数据不被外部轻松刷取)
+    # 仅允许以下路径被调用
+    allowed_api_paths = ["/api/v1/fd/", "/api/v1/health", "/api/system/status"]
+    
+    # 权限校验
+    is_path_allowed = any(request.url.path.startswith(p) for p in allowed_api_paths)
+    
+    if not is_path_allowed:
+        # 非公开路径（如 /api/v1/logs, /api/v1/stats）必须是管理员或信任来源
+        if not is_admin and not is_trusted_source:
             from fastapi.responses import JSONResponse
-            return JSONResponse(status_code=401, content={"detail": "Unauthorized: 写入操作受限。"})
+            return JSONResponse(status_code=401, content={"detail": "Unauthorized: 访问受限。"})
 
-    # 情况 B: 敏感读操作 (Logs/Stats) -> 必须有 Key 或 处于安全域名下
-    if request.url.path in ["/api/v1/logs", "/api/v1/stats"]:
-        if not is_authenticated and not is_safe_referer:
-            from fastapi.responses import JSONResponse
-            return JSONResponse(status_code=401, content={"detail": "Unauthorized: 系统敏感信息仅限官方页面访问。"})
-
-    # 情况 C: 普通数据接口 (FD 数据) -> 如果不是安全来源且没有 Key，则拒绝 (防盗刷)
+    # 4. 针对足球数据的防盗刷 (如果您不希望别人轻松拿走数据)
     if request.url.path.startswith("/api/v1/fd/"):
-        if not is_safe_referer and not is_authenticated:
+        if not is_trusted_source and not is_admin:
             from fastapi.responses import JSONResponse
             return JSONResponse(
                 status_code=403, 
-                content={"detail": "Forbidden: 请通过 MatchStats 官方网页访问数据，或提供有效 API Key。"}
+                content={"detail": "Forbidden: 请通过官方途径查看数据。"}
             )
 
     response = await call_next(request)
