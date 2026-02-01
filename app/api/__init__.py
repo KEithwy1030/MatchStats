@@ -1,7 +1,7 @@
 """
 API 路由
 """
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Request
 from typing import Optional, List
 from datetime import datetime
 import logging
