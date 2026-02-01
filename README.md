@@ -1,4 +1,5 @@
 # MatchStats Core: Enterprise-Grade Football Data Infrastructure
+<!-- Trigger Vercel Deploy: v1.0.1 -->
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
 ![FastAPI](https://img.shields.io/badge/FastAPI-High%20Performance-green.svg)
