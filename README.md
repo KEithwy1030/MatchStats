@@ -102,14 +102,14 @@ If this project helps you, consider buying me a coffee to keep the server runnin
     <tr>
       <td align="center" width="200">
         <!-- 请确保 alipay_qr.jpg 已放入 docs/images 目录 -->
-        <img src="docs/images/alipay_qr.jpg" alt="Alipay Support" width="180" />
+        <img src="./docs/images/alipay_qr.jpg" alt="Alipay Support" width="180" />
         <br/>
         <b>☕ Support (Alipay)</b><br/>
         <small>请作者喝杯咖啡</small>
       </td>
       <td align="center" width="200">
         <!-- 请确保 wechat_friend_qr.png 已放入 docs/images 目录 -->
-        <img src="docs/images/wechat_friend_qr.png" alt="Business Contact" width="180" />
+        <img src="./docs/images/wechat_friend_qr.png" alt="Business Contact" width="180" />
         <br/>
         <b>🤝 Business (WeChat)</b><br/>
         <small>添加好友 (备注: API)</small>
