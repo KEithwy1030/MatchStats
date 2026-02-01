@@ -15,6 +15,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 async def main():
+    parser = argparse.ArgumentParser(description="MatchStats Sync Tool")
     parser.add_argument("--mode", choices=["fast", "full", "live_only"], default="full", help="Sync mode: fast (results), live_only (in-play), or full (everything)")
     args = parser.parse_args()
 
