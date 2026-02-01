@@ -12,7 +12,16 @@ logger = logging.getLogger(__name__)
 class BaseRepository:
     """基础 Repository"""
     def __init__(self):
-        self.client = supabase
+        self._client = supabase
+    
+    @property
+    def client(self):
+        if self._client is None:
+            from app.database import supabase as latest_supabase
+            self._client = latest_supabase
+            if self._client is None:
+                raise RuntimeError("Supabase client is not initialized. Please check your SUPABASE_KEY and SUPABASE_URL.")
+        return self._client
 
 class FDRepository(BaseRepository):
     """Football-Data 数据访问"""
