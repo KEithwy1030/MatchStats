@@ -57,13 +57,8 @@ async def get_fd_match_details(match_id: int):
 @fd_router.get("/leagues", response_model=ApiResponse[List[FDLeague]])
 async def get_fd_leagues():
     """获取联赛列表"""
-    conn = await fd_repo.get_connection()
-    conn.row_factory = lambda c, r: dict(zip([col[0] for col in c.description], r))
-    cursor = await conn.cursor()
-    await cursor.execute("SELECT * FROM fd_leagues ORDER BY code")
-    rows = await cursor.fetchall()
-    await conn.close()
-    return ApiResponse(data=rows, total=len(rows))
+    leagues = await fd_repo.get_leagues()
+    return ApiResponse(data=leagues, total=len(leagues))
 
 
 @fd_router.get("/leagues/{code}/standings", response_model=ApiResponse[List[FDStanding]])
@@ -88,22 +83,8 @@ async def get_fd_scorers(
 @fd_router.get("/teams", response_model=ApiResponse[List[FDTeam]])
 async def get_fd_teams(league: Optional[str] = None):
     """获取球队列表"""
-    conn = await fd_repo.get_connection()
-    conn.row_factory = lambda c, r: dict(zip([col[0] for col in c.description], r))
-    cursor = await conn.cursor()
-
-    if league:
-        await cursor.execute('''
-            SELECT DISTINCT t.* FROM fd_teams t
-            INNER JOIN fd_matches m ON (m.home_team_id = t.fd_id OR m.away_team_id = t.fd_id)
-            WHERE m.league_code = ?
-        ''', (league,))
-    else:
-        await cursor.execute("SELECT * FROM fd_teams ORDER BY name")
-
-    rows = await cursor.fetchall()
-    await conn.close()
-    return ApiResponse(data=rows, total=len(rows))
+    teams = await fd_repo.get_teams(league)
+    return ApiResponse(data=teams, total=len(teams))
 
 
 # ============== 竞彩 API ==============
@@ -141,22 +122,7 @@ async def get_debug():
     """调试信息终端"""
     import os
     from fastapi.responses import PlainTextResponse
-    # 完全不使用 settings，只看文件系统
-    try:
-        task_files = os.listdir("/var/task")
-    except:
-        task_files = "error"
-    try:
-        data_files = os.listdir("/var/task/data") if os.path.exists("/var/task/data") else "data not found"
-    except:
-        data_files = "error"
-    try:
-        tmp_files = os.listdir("/tmp") if os.path.exists("/tmp") else "tmp not found"
-        if os.path.exists("/tmp/matchstats.db"):
-            tmp_files.append(f"matchstats.db({os.path.getsize('/tmp/matchstats.db')})")
-    except:
-        tmp_files = "error"
-    return PlainTextResponse(f"CWD: {os.getcwd()}\nDB_PATH: {settings.DB_PATH}\nTASK_FILES: {task_files}\nDATA_FILES: {data_files}\nTMP_FILES: {tmp_files}\n")
+    return PlainTextResponse(f"Supabase Mode Active\nURL: {settings.SUPABASE_URL}\nKEY_PRESENT: {bool(settings.SUPABASE_KEY)}\n")
 
 @system_router.get("/stats", response_model=StatsResponse)
 async def get_stats():

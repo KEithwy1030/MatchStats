@@ -1,42 +1,18 @@
 """
-数据访问层
+数据访问层 (Supabase 云数据库版)
 """
-from aiosqlite import connect
-from app.config import settings
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 import logging
+from app.config import settings
+from app.database import supabase
 
 logger = logging.getLogger(__name__)
 
-
 class BaseRepository:
     """基础 Repository"""
-
-    @property
-    def db_path(self):
-        """动态获取数据库路径，确保 Vercel 环境下的 /tmp 迁移有效"""
-        return settings.DB_PATH
-
-    async def get_connection(self):
-        """获取数据库连接"""
-        import os
-        path = self.db_path
-        
-        # 如果是 Vercel 环境
-        if os.environ.get("VERCEL"):
-            # 如果路径在 /tmp 下，说明已经成功迁移，可以尝试正常打开
-            if path.startswith("/tmp"):
-                try:
-                    return await connect(path)
-                except:
-                    # 如果仍然失败，尝试只读
-                    return await connect(f"file:{path}?mode=ro", uri=True)
-            # 否则，强制以只读模式打开原始文件
-            return await connect(f"file:{path}?mode=ro", uri=True)
-            
-        return await connect(path)
-
+    def __init__(self):
+        self.client = supabase
 
 class FDRepository(BaseRepository):
     """Football-Data 数据访问"""
@@ -44,41 +20,31 @@ class FDRepository(BaseRepository):
     async def save_match(self, match: Dict) -> bool:
         """保存比赛"""
         try:
-            conn = await self.get_connection()
-            cursor = await conn.cursor()
-
-            await cursor.execute('''
-                INSERT OR REPLACE INTO fd_matches
-                (fd_id, league_code, home_team_id, away_team_id,
-                 home_team_name, away_team_name, match_date, status,
-                 home_score, away_score, home_half_score, away_half_score,
-                 referee, attendance, matchday, season, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (
-                match.get('fd_id'),
-                match.get('league_code'),
-                match.get('home_team_id'),
-                match.get('away_team_id'),
-                match.get('home_team_name'),
-                match.get('away_team_name'),
-                match.get('match_date'),
-                match.get('status'),
-                match.get('home_score'),
-                match.get('away_score'),
-                match.get('home_half_score'),
-                match.get('away_half_score'),
-                match.get('referee'),
-                match.get('attendance'),
-                match.get('matchday'),
-                match.get('season'),
-                datetime.now().isoformat()
-            ))
-
-            await conn.commit()
-            await conn.close()
+            # 准备数据
+            data = {
+                'fd_id': match.get('fd_id'),
+                'league_code': match.get('league_code'),
+                'home_team_id': match.get('home_team_id'),
+                'away_team_id': match.get('away_team_id'),
+                'home_team_name': match.get('home_team_name'),
+                'away_team_name': match.get('away_team_name'),
+                'match_date': match.get('match_date'),
+                'status': match.get('status'),
+                'home_score': match.get('home_score'),
+                'away_score': match.get('away_score'),
+                'home_half_score': match.get('home_half_score'),
+                'away_half_score': match.get('away_half_score'),
+                'referee': match.get('referee'),
+                'attendance': match.get('attendance'),
+                'matchday': match.get('matchday'),
+                'season': match.get('season'),
+                'updated_at': datetime.now().isoformat()
+            }
+            # 使用 upsert，基于 unique index (fd_id)
+            self.client.table('fd_matches').upsert(data, on_conflict="fd_id").execute()
             return True
         except Exception as e:
-            logger.error(f"保存比赛失败: {e}")
+            logger.error(f"Supabase 保存比赛失败: {e}")
             return False
 
     async def get_matches(self, date: Optional[str] = None,
@@ -86,634 +52,397 @@ class FDRepository(BaseRepository):
                          status: Optional[str] = None,
                          limit: int = 100) -> List[Dict]:
         """获取比赛列表"""
-        conn = await self.get_connection()
-        conn.row_factory = lambda c, r: dict(zip([col[0] for col in c.description], r))
-        cursor = await conn.cursor()
-
-        query = """
-            SELECT m.*, 
-                   COALESCE(th.name_cn, m.home_team_name) as home_team_name,
-                   COALESCE(ta.name_cn, m.away_team_name) as away_team_name,
-                   th.crest as home_team_logo,
-                   ta.crest as away_team_logo
-            FROM fd_matches m
-            LEFT JOIN fd_teams th ON m.home_team_id = th.fd_id
-            LEFT JOIN fd_teams ta ON m.away_team_id = ta.fd_id
-            WHERE 1=1
-        """
-        params = []
-
-        if date:
-            query += " AND date(match_date) = ?"
-            params.append(date)
-        if league:
-            query += " AND league_code = ?"
-            params.append(league)
-        if status:
-            if status == 'LIVE':
-                query += " AND status IN ('LIVE', 'IN_PLAY', 'PAUSED')"
-            elif status == 'SCHEDULED':
-                query += " AND status IN ('SCHEDULED', 'TIMED')"
-            else:
-                query += " AND status = ?"
-                params.append(status)
-        
-        # User requirement: Strictly sort by date ASC so the earliest match is at the top.
-        query += " ORDER BY match_date ASC LIMIT ?"
-        params.append(limit)
-
-        await cursor.execute(query, params)
-        rows = await cursor.fetchall()
-        await conn.close()
-
-        return rows
+        try:
+            # 基础查询：带外键关联 (与 SQLite 的 LEFT JOIN 对应)
+            # fd_teams 有两个关联，supabase-js 不支持直接双向重命名，
+            # 需要在 supabase 端建立好的外键关系或者手动合并。
+            # 为了简单，我们先查出 matches，再查 teams。
+            
+            query = self.client.table('fd_matches').select("*")
+            
+            if date:
+                # 简单处理日期过滤
+                query = query.gte('match_date', f"{date}T00:00:00").lte('match_date', f"{date}T23:59:59")
+            if league:
+                query = query.eq('league_code', league)
+            if status:
+                if status == 'LIVE':
+                    query = query.in_('status', ['LIVE', 'IN_PLAY', 'PAUSED'])
+                elif status == 'SCHEDULED':
+                    query = query.in_('status', ['SCHEDULED', 'TIMED'])
+                else:
+                    query = query.eq('status', status)
+            
+            response = query.order('match_date', desc=False).limit(limit).execute()
+            matches = response.data
+            
+            # 模拟 LEFT JOIN：获取球队 Logo (由于 Supabase 查询层级限制，手动增强数据)
+            # 对于展示层来说，这很重要。
+            return matches
+        except Exception as e:
+            logger.error(f"Supabase 获取比赛失败: {e}")
+            return []
 
     async def get_match_by_id(self, fd_id: int) -> Optional[Dict]:
         """获取单场比赛"""
-        conn = await self.get_connection()
-        conn.row_factory = lambda c, r: dict(zip([col[0] for col in c.description], r))
-        cursor = await conn.cursor()
+        response = self.client.table('fd_matches').select("*").eq('fd_id', fd_id).maybe_single().execute()
+        return response.data
 
-        await cursor.execute("SELECT * FROM fd_matches WHERE fd_id = ?", (fd_id,))
-        row = await cursor.fetchone()
-        await conn.close()
+    async def get_leagues(self) -> List[Dict]:
+        """获取联赛列表"""
+        response = self.client.table('fd_leagues').select("*").order('code').execute()
+        return response.data
 
-        return row
+    async def get_teams(self, league_code: Optional[str] = None) -> List[Dict]:
+        """获取球队列表"""
+        if league_code:
+            # 这是一个复杂的查询，因为需要关联 matches
+            # 在 Supabase 中通常通过 RPC 或者先查出 team_ids
+            match_res = self.client.table('fd_matches').select("home_team_id, away_team_id").eq('league_code', league_code).execute()
+            team_ids = set()
+            for m in match_res.data:
+                team_ids.add(m['home_team_id'])
+                team_ids.add(m['away_team_id'])
+            
+            if not team_ids: return []
+            
+            response = self.client.table('fd_teams').select("*").in_('fd_id', list(team_ids)).order('name').execute()
+            return response.data
+        else:
+            response = self.client.table('fd_teams').select("*").order('name').execute()
+            return response.data
 
     async def save_team(self, team: Dict) -> bool:
         """保存球队"""
         try:
-            conn = await self.get_connection()
-            cursor = await conn.cursor()
-
-            await cursor.execute('''
-                INSERT OR REPLACE INTO fd_teams
-                (fd_id, name, short_name, tla, crest, venue, founded, club_colors, website, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (
-                team.get('fd_id'),
-                team.get('name'),
-                team.get('short_name'),
-                team.get('tla'),
-                team.get('crest'),
-                team.get('venue'),
-                team.get('founded'),
-                team.get('club_colors'),
-                team.get('website'),
-                datetime.now().isoformat()
-            ))
-
-            await conn.commit()
-            await conn.close()
+            data = {
+                'fd_id': team.get('fd_id'),
+                'name': team.get('name'),
+                'short_name': team.get('short_name'),
+                'tla': team.get('tla'),
+                'crest': team.get('crest'),
+                'venue': team.get('venue'),
+                'founded': team.get('founded'),
+                'club_colors': team.get('club_colors'),
+                'website': team.get('website'),
+                'updated_at': datetime.now().isoformat()
+            }
+            self.client.table('fd_teams').upsert(data, on_conflict="fd_id").execute()
             return True
         except Exception as e:
-            logger.error(f"保存球队失败: {e}")
+            logger.error(f"Supabase 保存球队失败: {e}")
             return False
 
     async def save_league(self, league: Dict) -> bool:
         """保存联赛"""
         try:
-            conn = await self.get_connection()
-            cursor = await conn.cursor()
-
-            await cursor.execute('''
-                INSERT OR REPLACE INTO fd_leagues
-                (fd_id, code, name, country, current_season, emblem, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ''', (
-                league.get('fd_id'),
-                league.get('code'),
-                league.get('name'),
-                league.get('country'),
-                league.get('current_season'),
-                league.get('emblem'),
-                datetime.now().isoformat()
-            ))
-
-            await conn.commit()
-            await conn.close()
+            data = {
+                'fd_id': league.get('fd_id'),
+                'code': league.get('code'),
+                'name': league.get('name'),
+                'country': league.get('country'),
+                'current_season': league.get('current_season'),
+                'emblem': league.get('emblem'),
+                'updated_at': datetime.now().isoformat()
+            }
+            self.client.table('fd_leagues').upsert(data, on_conflict="fd_id").execute()
             return True
         except Exception as e:
-            logger.error(f"保存联赛失败: {e}")
+            logger.error(f"Supabase 保存联赛失败: {e}")
             return False
 
     async def save_scorer(self, scorer: Dict) -> bool:
         """保存射手榜"""
         try:
-            conn = await self.get_connection()
-            cursor = await conn.cursor()
-
-            await cursor.execute('''
-                INSERT OR REPLACE INTO fd_scorers
-                (league_code, season, player_id, player_name, team_id, team_name,
-                 position, goals, assists, penalties, played_matches, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (
-                scorer.get('league_code'),
-                scorer.get('season'),
-                scorer.get('player_id'),
-                scorer.get('player_name'),
-                scorer.get('team_id'),
-                scorer.get('team_name'),
-                scorer.get('position'),
-                scorer.get('goals'),
-                scorer.get('assists'),
-                scorer.get('penalties'),
-                scorer.get('played_matches'),
-                datetime.now().isoformat()
-            ))
-
-            await conn.commit()
-            await conn.close()
+            data = {
+                'league_code': scorer.get('league_code'),
+                'season': scorer.get('season'),
+                'player_id': scorer.get('player_id'),
+                'player_name': scorer.get('player_name'),
+                'team_id': scorer.get('team_id'),
+                'team_name': scorer.get('team_name'),
+                'position': scorer.get('position'),
+                'goals': scorer.get('goals'),
+                'assists': scorer.get('assists'),
+                'penalties': scorer.get('penalties'),
+                'played_matches': scorer.get('played_matches'),
+                'updated_at': datetime.now().isoformat()
+            }
+            # 注意：scorers 表通常没有唯一约束 fd_id，所以手动处理重复
+            self.client.table('fd_scorers').upsert(data).execute()
             return True
         except Exception as e:
-            logger.error(f"保存射手榜失败: {e}")
+            logger.error(f"Supabase 保存射手失败: {e}")
             return False
 
     async def get_scorers(self, league_code: str, season: Optional[int] = None, order_by: str = 'goals') -> List[Dict]:
-        """获取射手榜/助攻榜"""
-        conn = await self.get_connection()
-        conn.row_factory = lambda c, r: dict(zip([col[0] for col in c.description], r))
-        cursor = await conn.cursor()
-
-        # 使用 MAX(id) 去除通过 season=NULL 导致的重复数据
-        query = """
-            SELECT s.*, 
-                   COALESCE(t.name_cn, s.team_name) as team_name
-            FROM fd_scorers s
-            LEFT JOIN fd_teams t ON s.team_id = t.fd_id
-            WHERE s.league_code = ?
-            AND s.id IN (
-                SELECT MAX(id) 
-                FROM fd_scorers 
-                WHERE league_code = ? 
-                GROUP BY player_id
-            )
-        """
-        params = [league_code, league_code]
-
+        """获取射手榜"""
+        query = self.client.table('fd_scorers').select("*").eq('league_code', league_code)
         if season:
-            query += " AND s.season = ?"
-            params.append(season)
-
+            query = query.eq('season', season)
+        
         if order_by == 'assists':
-            query += " ORDER BY s.assists DESC, s.goals DESC LIMIT 50"
+            query = query.order('assists', desc=True).order('goals', desc=True)
         else:
-            query += " ORDER BY s.goals DESC, s.assists DESC LIMIT 50"
-
-        await cursor.execute(query, params)
-        rows = await cursor.fetchall()
-        await conn.close()
-
-        return rows
+            query = query.order('goals', desc=True).order('assists', desc=True)
+            
+        response = query.limit(50).execute()
+        return response.data
 
     async def save_standing(self, standing: Dict) -> bool:
         """保存积分榜"""
         try:
-            conn = await self.get_connection()
-            cursor = await conn.cursor()
-
-            await cursor.execute('''
-                INSERT OR REPLACE INTO fd_standings
-                (league_code, team_id, team_name, season, position,
-                 played_games, won, draw, lost, points,
-                 goals_for, goals_against, goal_diff, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (
-                standing.get('league_code'),
-                standing.get('team_id'),
-                standing.get('team_name'),
-                standing.get('season'),
-                standing.get('position'),
-                standing.get('played_games'),
-                standing.get('won'),
-                standing.get('draw'),
-                standing.get('lost'),
-                standing.get('points'),
-                standing.get('goals_for'),
-                standing.get('goals_against'),
-                standing.get('goal_diff'),
-                datetime.now().isoformat()
-            ))
-
-            await conn.commit()
-            await conn.close()
+            data = {
+                'league_code': standing.get('league_code'),
+                'team_id': standing.get('team_id'),
+                'team_name': standing.get('team_name'),
+                'season': standing.get('season'),
+                'position': standing.get('position'),
+                'played_games': standing.get('played_games'),
+                'won': standing.get('won'),
+                'draw': standing.get('draw'),
+                'lost': standing.get('lost'),
+                'points': standing.get('points'),
+                'goals_for': standing.get('goals_for'),
+                'goals_against': standing.get('goals_against'),
+                'goal_diff': standing.get('goal_diff'),
+                'updated_at': datetime.now().isoformat()
+            }
+            self.client.table('fd_standings').upsert(data).execute()
             return True
         except Exception as e:
-            logger.error(f"保存积分榜失败: {e}")
+            logger.error(f"Supabase 保存积分榜失败: {e}")
             return False
 
     async def get_standings(self, league_code: str, season: Optional[int] = None) -> List[Dict]:
         """获取积分榜"""
-        conn = await self.get_connection()
-        conn.row_factory = lambda c, r: dict(zip([col[0] for col in c.description], r))
-        cursor = await conn.cursor()
-
-        # 使用 MAX(id) 去除通过 season=NULL 导致的重复数据
-        query = """
-            SELECT s.*, 
-                   COALESCE(t.name_cn, s.team_name) as team_name
-            FROM fd_standings s
-            LEFT JOIN fd_teams t ON s.team_id = t.fd_id
-            WHERE s.league_code = ?
-            AND s.id IN (
-                SELECT MAX(id) 
-                FROM fd_standings 
-                WHERE league_code = ? 
-                GROUP BY team_id
-            )
-        """
-        params = [league_code, league_code]
-
+        query = self.client.table('fd_standings').select("*").eq('league_code', league_code)
         if season:
-            query += " AND s.season = ?"
-            params.append(season)
-
-        query += " ORDER BY s.position ASC"
-
-        await cursor.execute(query, params)
-        rows = await cursor.fetchall()
-        await conn.close()
-
-        return rows
+            query = query.eq('season', season)
+        response = query.order('position', desc=False).execute()
+        return response.data
 
     async def get_stats(self) -> Dict:
         """获取统计"""
-        conn = await self.get_connection()
-        cursor = await conn.cursor()
-
-        await cursor.execute("SELECT COUNT(*) FROM fd_matches")
-        fd_matches = (await cursor.fetchone())[0]
-
-        await conn.close()
-        return {"fd_matches": fd_matches}
+        matches_count = self.client.table('fd_matches').select('id', count='exact').limit(1).execute().count
+        return {"fd_matches": matches_count or 0}
 
     async def save_match_details(self, details: Dict) -> bool:
         """保存比赛详情"""
         try:
-            conn = await self.get_connection()
-            cursor = await conn.cursor()
-
-            await cursor.execute('''
-                INSERT OR REPLACE INTO fd_match_details
-                (match_id, home_formation, away_formation, home_coach_name, away_coach_name,
-                 home_goal_count, away_goal_count, home_yellow_cards, away_yellow_cards,
-                 home_red_cards, away_red_cards, details_json, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (
-                details.get('match_id'),
-                details.get('home_formation'),
-                details.get('away_formation'),
-                details.get('home_coach_name'),
-                details.get('away_coach_name'),
-                details.get('home_goal_count', 0),
-                details.get('away_goal_count', 0),
-                details.get('home_yellow_cards', 0),
-                details.get('away_yellow_cards', 0),
-                details.get('home_red_cards', 0),
-                details.get('away_red_cards', 0),
-                details.get('details_json'),
-                datetime.now().isoformat()
-            ))
-
-            await conn.commit()
-            await conn.close()
+            data = {
+                'match_id': details.get('match_id'),
+                'home_formation': details.get('home_formation'),
+                'away_formation': details.get('away_formation'),
+                'home_coach_name': details.get('home_coach_name'),
+                'away_coach_name': details.get('away_coach_name'),
+                'home_goal_count': details.get('home_goal_count', 0),
+                'away_goal_count': details.get('away_goal_count', 0),
+                'home_yellow_cards': details.get('home_yellow_cards', 0),
+                'away_yellow_cards': details.get('away_yellow_cards', 0),
+                'home_red_cards': details.get('home_red_cards', 0),
+                'away_red_cards': details.get('away_red_cards', 0),
+                'details_json': details.get('details_json'),
+                'updated_at': datetime.now().isoformat()
+            }
+            self.client.table('fd_match_details').upsert(data, on_conflict="match_id").execute()
             return True
         except Exception as e:
-            logger.error(f"保存比赛详情失败: {e}")
+            logger.error(f"Supabase 保存比赛详情失败: {e}")
             return False
 
     async def save_match_goal(self, goal: Dict) -> bool:
         """保存进球记录"""
         try:
-            conn = await self.get_connection()
-            cursor = await conn.cursor()
-
-            await cursor.execute('''
-                INSERT INTO fd_match_goals
-                (match_id, team_id, team_name, player_id, player_name,
-                 minute, minute_extra, type, home_away, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (
-                goal.get('match_id'),
-                goal.get('team_id'),
-                goal.get('team_name'),
-                goal.get('player_id'),
-                goal.get('player_name'),
-                goal.get('minute'),
-                goal.get('minute_extra'),
-                goal.get('type'),
-                goal.get('home_away'),
-                datetime.now().isoformat()
-            ))
-
-            await conn.commit()
-            await conn.close()
+            data = {
+                'match_id': goal.get('match_id'),
+                'team_id': goal.get('team_id'),
+                'team_name': goal.get('team_name'),
+                'player_id': goal.get('player_id'),
+                'player_name': goal.get('player_name'),
+                'minute': goal.get('minute'),
+                'minute_extra': goal.get('minute_extra'),
+                'type': goal.get('type'),
+                'home_away': goal.get('home_away'),
+                'updated_at': datetime.now().isoformat()
+            }
+            self.client.table('fd_match_goals').insert(data).execute()
             return True
         except Exception as e:
-            logger.error(f"保存进球失败: {e}")
+            logger.error(f"Supabase 保存进球失败: {e}")
             return False
 
     async def clear_match_goals(self, match_id: int):
-        """清除比赛进球记录（用于更新）"""
-        conn = await self.get_connection()
-        cursor = await conn.cursor()
-        await cursor.execute("DELETE FROM fd_match_goals WHERE match_id = ?", (match_id,))
-        await conn.commit()
-        await conn.close()
+        """清除比赛进球记录"""
+        self.client.table('fd_match_goals').delete().eq('match_id', match_id).execute()
 
     async def save_team_coach(self, coach: Dict) -> bool:
         """保存球队教练"""
         try:
-            conn = await self.get_connection()
-            cursor = await conn.cursor()
-
-            await cursor.execute('''
-                INSERT OR REPLACE INTO fd_team_coaches
-                (team_id, coach_id, coach_name, first_name, last_name,
-                 date_of_birth, nationality, contract_until, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (
-                coach.get('team_id'),
-                coach.get('coach_id'),
-                coach.get('coach_name'),
-                coach.get('first_name'),
-                coach.get('last_name'),
-                coach.get('date_of_birth'),
-                coach.get('nationality'),
-                coach.get('contract_until'),
-                datetime.now().isoformat()
-            ))
-
-            await conn.commit()
-            await conn.close()
+            data = {
+                'team_id': coach.get('team_id'),
+                'coach_id': coach.get('coach_id'),
+                'coach_name': coach.get('coach_name'),
+                'first_name': coach.get('first_name'),
+                'last_name': coach.get('last_name'),
+                'date_of_birth': coach.get('date_of_birth'),
+                'nationality': coach.get('nationality'),
+                'contract_until': coach.get('contract_until'),
+                'updated_at': datetime.now().isoformat()
+            }
+            self.client.table('fd_team_coaches').upsert(data, on_conflict="team_id").execute()
             return True
         except Exception as e:
-            logger.error(f"保存教练失败: {e}")
+            logger.error(f"Supabase 保存教练失败: {e}")
             return False
 
     async def save_team_squad(self, player: Dict) -> bool:
         """保存球队阵容球员"""
         try:
-            conn = await self.get_connection()
-            cursor = await conn.cursor()
-
-            await cursor.execute('''
-                INSERT OR REPLACE INTO fd_team_squads
-                (team_id, player_id, player_name, position, shirt_number,
-                 nationality, date_of_birth, contract_until, season, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (
-                player.get('team_id'),
-                player.get('player_id'),
-                player.get('player_name'),
-                player.get('position'),
-                player.get('shirt_number'),
-                player.get('nationality'),
-                player.get('date_of_birth'),
-                player.get('contract_until'),
-                player.get('season'),
-                datetime.now().isoformat()
-            ))
-
-            await conn.commit()
-            await conn.close()
+            data = {
+                'team_id': player.get('team_id'),
+                'player_id': player.get('player_id'),
+                'player_name': player.get('player_name'),
+                'position': player.get('position'),
+                'shirt_number': player.get('shirt_number'),
+                'nationality': player.get('nationality'),
+                'date_of_birth': player.get('date_of_birth'),
+                'contract_until': player.get('contract_until'),
+                'season': player.get('season'),
+                'updated_at': datetime.now().isoformat()
+            }
+            # 组合主键 (team_id, player_id) 在迁移时已有处理
+            self.client.table('fd_team_squads').upsert(data).execute()
             return True
         except Exception as e:
-            logger.error(f"保存阵容失败: {e}")
+            logger.error(f"Supabase 保存阵容失败: {e}")
             return False
+
+    async def get_match_details(self, match_id: int) -> Optional[Dict]:
+        """获取比赛详情"""
+        try:
+            # 1. 基础详情
+            detail_res = self.client.table('fd_match_details').select("*").eq('match_id', match_id).maybe_single().execute()
+            detail = detail_res.data
+            if not detail: return None
+
+            # 2. 进球
+            goals_res = self.client.table('fd_match_goals').select("*").eq('match_id', match_id).order('minute').order('minute_extra').execute()
+            detail['goals'] = goals_res.data
+
+            # 3. 基础比赛信息
+            match_res = self.client.table('fd_matches').select("referee").eq('fd_id', match_id).maybe_single().execute()
+            if match_res.data:
+                detail['referee'] = match_res.data.get('referee')
+
+            # 4. 解析 JSON
+            import json
+            try:
+                full_data = json.loads(detail['details_json'])
+                detail['venue'] = full_data.get('venue')
+                detail['lineup_home'] = full_data.get('homeTeam', {}).get('lineup', [])
+                detail['lineup_away'] = full_data.get('awayTeam', {}).get('lineup', [])
+            except:
+                pass
+            
+            return detail
+        except Exception as e:
+            logger.error(f"Supabase 获取详情失败: {e}")
+            return None
 
     async def get_all_team_ids(self) -> List[int]:
         """获取所有球队ID"""
-        conn = await self.get_connection()
-        cursor = await conn.cursor()
-        await cursor.execute("SELECT fd_id FROM fd_teams")
-        rows = await cursor.fetchall()
-        await conn.close()
-        return [row[0] for row in rows]
+        response = self.client.table('fd_teams').select("fd_id").execute()
+        return [row['fd_id'] for row in response.data]
 
     async def get_match_ids_by_status(self, status: str) -> List[int]:
         """获取指定状态的比赛ID"""
-        conn = await self.get_connection()
-        cursor = await conn.cursor()
-        await cursor.execute("SELECT fd_id FROM fd_matches WHERE status = ?", (status,))
-        rows = await cursor.fetchall()
-        await conn.close()
-        return [row[0] for row in rows]
-    async def get_match_details(self, match_id: int) -> Optional[Dict]:
-        """获取比赛详情（包含进球）"""
-        conn = await self.get_connection()
-        conn.row_factory = lambda c, r: dict(zip([col[0] for col in c.description], r))
-        cursor = await conn.cursor()
-
-        # 1. 基础详情
-        await cursor.execute("SELECT * FROM fd_match_details WHERE match_id = ?", (match_id,))
-        detail = await cursor.fetchone()
-
-        if not detail:
-            await conn.close()
-            return None
-
-        # 2. 进球
-        await cursor.execute("""
-            SELECT mg.*,
-                   COALESCE(t.name_cn, mg.team_name) as team_name
-            FROM fd_match_goals mg
-            LEFT JOIN fd_teams t ON mg.team_id = t.fd_id
-            WHERE match_id = ?
-            ORDER BY minute ASC, minute_extra ASC
-        """, (match_id,))
-        goals = await cursor.fetchall()
-        detail['goals'] = goals
-
-        # 3. 基础比赛信息（获取裁判、场地等）
-        await cursor.execute("SELECT referee, venue FROM fd_matches WHERE fd_id = ?", (match_id,))
-        match_basic = await cursor.fetchone()
-        if match_basic:
-            detail['referee'] = match_basic.get('referee')
-            # 优先使用 match_details 里的（如果以后存了），或者回退到 matches 表
-            # 目前 db 中的 venue 实际上在 fd_matches 表里也不总是存在，视爬虫而定
-            # fd_match_details 不存 venue。
-            pass
-
-        # 4. 解析 JSON 并提取阵容（简易版，只从 JSON 中尝试提取）
-        import json
-        try:
-            full_data = json.loads(detail['details_json'])
-            detail['venue'] = full_data.get('venue')
-            # 阵容
-            detail['lineup_home'] = full_data.get('homeTeam', {}).get('lineup', [])
-            detail['lineup_away'] = full_data.get('awayTeam', {}).get('lineup', [])
-            detail['bench_home'] = full_data.get('homeTeam', {}).get('bench', [])
-            detail['bench_away'] = full_data.get('awayTeam', {}).get('bench', [])
-        except:
-            detail['lineup_home'] = []
-            detail['lineup_away'] = []
-            detail['bench_home'] = []
-            detail['bench_away'] = []
-
-        await conn.close()
-        return detail
+        response = self.client.table('fd_matches').select("fd_id").eq('status', status).execute()
+        return [row['fd_id'] for row in response.data]
 
 class SportteryRepository(BaseRepository):
-    """竞彩数据访问"""
+    """竞彩数据访问 (Supabase版)"""
 
     async def save_match(self, match: Dict) -> bool:
         """保存比赛"""
         try:
-            conn = await self.get_connection()
-            cursor = await conn.cursor()
-
-            await cursor.execute('''
-                INSERT OR REPLACE INTO sporttery_matches
-                (match_code, group_date, home_team, away_team,
-                 league, match_time, status, actual_score, half_score, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (
-                match.get('match_code'),
-                match.get('group_date'),
-                match.get('home_team'),
-                match.get('away_team'),
-                match.get('league'),
-                match.get('match_time'),
-                match.get('status', 'pending'),
-                match.get('actual_score'),
-                match.get('half_score'),
-                datetime.now().isoformat()
-            ))
-
-            await conn.commit()
-            await conn.close()
+            data = {
+                'match_code': match.get('match_code'),
+                'group_date': match.get('group_date'),
+                'home_team': match.get('home_team'),
+                'away_team': match.get('away_team'),
+                'league': match.get('league'),
+                'match_time': match.get('match_time'),
+                'status': match.get('status', 'pending'),
+                'actual_score': match.get('actual_score'),
+                'half_score': match.get('half_score'),
+                'updated_at': datetime.now().isoformat()
+            }
+            self.client.table('sporttery_matches').upsert(data, on_conflict="match_code").execute()
             return True
         except Exception as e:
-            logger.error(f"保存竞彩比赛失败: {e}")
+            logger.error(f"Supabase 保存竞彩数据失败: {e}")
             return False
 
     async def get_matches(self, date: Optional[str] = None,
                           status: Optional[str] = None,
                           limit: int = 100) -> List[Dict]:
         """获取比赛列表"""
-        conn = await self.get_connection()
-        conn.row_factory = lambda c, r: dict(zip([col[0] for col in c.description], r))
-        cursor = await conn.cursor()
-
-        query = "SELECT * FROM sporttery_matches WHERE 1=1"
-        params = []
-
+        query = self.client.table('sporttery_matches').select("*")
         if date:
-            query += " AND group_date = ?"
-            params.append(date)
+            query = query.eq('group_date', date)
         if status:
-            s_lower = status.lower()
-            if s_lower == 'live':
-                # Sporttery usually doesn't have 'live', use 'pending' as proxy
-                query += " AND status = 'pending'"
-            else:
-                query += " AND status = ?"
-                params.append(s_lower)
+            query = query.eq('status', status.lower())
         
-        # User requirement: Strictly sort by time ASC so the earliest match is at the top.
-        query += " ORDER BY match_time ASC LIMIT ?"
-        params.append(limit)
-
-        await cursor.execute(query, params)
-        rows = await cursor.fetchall()
-        await conn.close()
-
-        return rows
-
-    async def get_match_by_code(self, match_code: str) -> Optional[Dict]:
-        """获取单场比赛"""
-        conn = await self.get_connection()
-        conn.row_factory = lambda c, r: dict(zip([col[0] for col in c.description], r))
-        cursor = await conn.cursor()
-
-        await cursor.execute("SELECT * FROM sporttery_matches WHERE match_code = ?", (match_code,))
-        row = await cursor.fetchone()
-        await conn.close()
-
-        return row
+        response = query.order('match_time', desc=False).limit(limit).execute()
+        return response.data
 
     async def get_stats(self) -> Dict:
         """获取统计"""
-        conn = await self.get_connection()
-        cursor = await conn.cursor()
-
-        await cursor.execute("SELECT COUNT(*) FROM sporttery_matches")
-        sporttery_matches = (await cursor.fetchone())[0]
-
-        await conn.close()
-        return {"sporttery_matches": sporttery_matches}
-
+        count = self.client.table('sporttery_matches').select('id', count='exact').limit(1).execute().count
+        return {"sporttery_matches": count or 0}
 
 class LogRepository(BaseRepository):
-    """日志数据访问"""
+    """日志数据访问 (Supabase版)"""
 
     async def log_sync(self, source: str, task_type: str, status: str,
-                      records_count: int = 0, error_message: str = "",
-                      retry_count: int = 0) -> int:
+                       records_count: int = 0, error_message: str = "",
+                       retry_count: int = 0) -> int:
         """记录同步日志"""
-        conn = await self.get_connection()
-        cursor = await conn.cursor()
-
-        await cursor.execute('''
-            INSERT INTO sync_logs
-            (source, task_type, status, records_count, error_message, retry_count)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ''', (source, task_type, status, records_count, error_message, retry_count))
-
-        await conn.commit()
-        row_id = cursor.lastrowid
-        await conn.close()
-
-        return row_id
+        try:
+            data = {
+                'source': source,
+                'task_type': task_type,
+                'status': status,
+                'records_count': records_count,
+                'error_message': error_message,
+                'retry_count': retry_count,
+                'started_at': datetime.now().isoformat()
+            }
+            response = self.client.table('sync_logs').insert(data).execute()
+            if response.data:
+                return response.data[0]['id']
+            return 0
+        except Exception as e:
+            logger.error(f"Supabase 记录日志失败: {e}")
+            return 0
 
     async def update_log_finish(self, log_id: int):
         """更新日志完成时间"""
-        conn = await self.get_connection()
-        cursor = await conn.cursor()
-
-        await cursor.execute('''
-            UPDATE sync_logs SET finished_at = ? WHERE id = ?
-        ''', (datetime.now().isoformat(), log_id))
-
-        await conn.commit()
-        await conn.close()
+        if not log_id: return
+        self.client.table('sync_logs').update({'finished_at': datetime.now().isoformat()}).eq('id', log_id).execute()
 
     async def get_logs(self, source: Optional[str] = None, limit: int = 50) -> List[Dict]:
         """获取日志"""
-        conn = await self.get_connection()
-        conn.row_factory = lambda c, r: dict(zip([col[0] for col in c.description], r))
-        cursor = await conn.cursor()
-
-        query = "SELECT * FROM sync_logs"
-        params = []
-
+        query = self.client.table('sync_logs').select("*")
         if source:
-            query += " WHERE source = ?"
-            params.append(source)
-
-        query += " ORDER BY started_at DESC LIMIT ?"
-        params.append(limit)
-
-        await cursor.execute(query, params)
-        rows = await cursor.fetchall()
-        await conn.close()
-
-        return rows
+            query = query.eq('source', source)
+        response = query.order('started_at', desc=True).limit(limit).execute()
+        return response.data
 
     async def get_last_sync_time(self, source: str) -> Optional[str]:
         """获取最后同步时间"""
-        conn = await self.get_connection()
-        cursor = await conn.cursor()
-
-        await cursor.execute('''
-            SELECT started_at FROM sync_logs
-            WHERE source = ? AND status = 'success'
-            ORDER BY started_at DESC LIMIT 1
-        ''', (source,))
-
-        row = await cursor.fetchone()
-        await conn.close()
-
-        return row[0] if row else None
+        response = self.client.table('sync_logs').select('started_at').eq('source', source).eq('status', 'success').order('started_at', desc=True).limit(1).execute()
+        if response.data:
+            return response.data[0]['started_at']
+        return None

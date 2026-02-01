@@ -1,0 +1,32 @@
+name: Full Sync (Standings & Metadata)
+
+on:
+  schedule:
+    - cron: '0 0,12 * * *'  # 每天 0点和 12点运行 (每 12 小时)
+  workflow_dispatch:
+
+jobs:
+  sync_full:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install python-dotenv supabase aiosqlite postgrest httpx
+
+      - name: Run full synchronization
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          FD_API_TOKEN: ${{ secrets.FD_API_TOKEN }}
+        run: python scripts/sync_now.py --mode full

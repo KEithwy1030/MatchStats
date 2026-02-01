@@ -15,22 +15,13 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from contextlib import asynccontextmanager
 import uvicorn
-from supabase import create_client, Client
-
 from app.config import settings, ensure_data_dir, ensure_logs_dir
-from app.database import init_db
+from app.database import init_db, supabase
 from app.api import fd_router, sporttery_router, system_router
 from app.scheduler import scheduler
 from app.web import web_router
 from fastapi.staticfiles import StaticFiles
 import os
-
-# 初始化 Supabase 客户端
-supabase: Client = None
-if settings.SUPABASE_URL and settings.SUPABASE_KEY:
-    # Vercel Deployment Trigger: 2026-01-31 00:30 - PREDICTIONS ERROR DEBUG
-    # Added detailed traceback to /predictions to find source of [Errno 16]
-    supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
 
 # 配置日志：默认仅输出到控制台
 # 只有在环境变量中明确指定了匹配的路径时才尝试写文件
@@ -52,32 +43,7 @@ async def lifespan(app: FastAPI):
     logger.info("=" * 50)
     logger.info("MatchStats 服务启动中...")
     
-    # Vercel 环境处理：将只读 DB 拷贝到可写的 /tmp 目录
-    if os.environ.get("VERCEL"):
-        temp_db = "/tmp/matchstats.db"
-        source_db = os.path.abspath(settings.DB_PATH)
-        logger.info(f"Vercel: 准备迁移数据库. 源路径: {source_db}, 目标路径: {temp_db}")
-        
-        if os.path.exists(source_db):
-            try:
-                # 拷贝前先确保目录存在并打印大小
-                size = os.path.getsize(source_db)
-                logger.info(f"Vercel: 发现源数据库, 大小: {size} bytes")
-                shutil.copy(source_db, temp_db)
-                settings.DB_PATH = temp_db
-                logger.info(f"Vercel: 数据库迁移成功 -> {settings.DB_PATH}")
-            except Exception as e:
-                logger.error(f"Vercel: 拷贝数据库失败: {e}")
-        else:
-            # 探测当前目录
-            logger.error(f"Vercel: 源数据库文件不存在: {source_db}")
-            logger.info(f"Vercel: 当前工作目录: {os.getcwd()}")
-            try:
-                logger.info(f"Vercel: 根目录内容: {os.listdir('.')}")
-                if os.path.exists('data'):
-                    logger.info(f"Vercel: data 目录内容: {os.listdir('data')}")
-            except:
-                pass
+    # Supabase 初始化已经在 app.database 完成
 
     # 初始化数据库
     await init_db()
