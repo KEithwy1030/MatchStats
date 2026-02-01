@@ -217,8 +217,11 @@ class SyncScheduler:
             total = 0
 
             for league in settings.monitored_leagues_list:
-                standings_data = await self.fd_scraper.get_standings(league)
+                standings_data, season_info = await self.fd_scraper.get_standings(league)
 
+                # Extract season ID for consistency
+                season_id = season_info.get('id') if season_info else None
+                
                 # standings_data 可能是列表或字典
                 tables = []
                 if isinstance(standings_data, list):
@@ -255,7 +258,8 @@ class SyncScheduler:
                             'points': team.get('points'),
                             'goals_for': team.get('goalsFor'),
                             'goals_against': team.get('goalsAgainst'),
-                            'goal_diff': team.get('goalDifference')
+                            'goal_diff': team.get('goalDifference'),
+                            'season': season_id
                         })
                         total += 1
 
@@ -354,14 +358,17 @@ class SyncScheduler:
             total = 0
 
             for league in settings.monitored_leagues_list:
-                scorers = await self.fd_scraper.get_scorers(league, limit=100)
+                scorers, season_info = await self.fd_scraper.get_scorers(league, limit=100)
+
+                # Extract season ID for consistency
+                season_id = season_info.get('id') if season_info else None
 
                 for pos_idx, scorer in enumerate(scorers):
                     player = scorer.get('player', {})
                     team = scorer.get('team', {})
                     await self.fd_repo.save_scorer({
                         'league_code': league,
-                        'season': scorer.get('season', {}).get('id') if isinstance(scorer.get('season'), dict) else scorer.get('season'), # Fix season access too if needed, but scraper output shows it might be root or nested. API usually has season at root of response, not scorer. Wait, scraper.get_scorers returns list of scorers.
+                        'season': season_id,
                         # Actually looking at debug output context, we didn't see season in the scorer keys. It is usually a parent key. 
                         # Let's check debug output again.
                         # keys: ['player', 'team', 'playedMatches', 'goals', 'assists', 'penalties']

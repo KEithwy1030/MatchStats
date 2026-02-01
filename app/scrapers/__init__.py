@@ -105,23 +105,23 @@ class FootballDataScraper:
         endpoint = f"/competitions/{competition_id}"
         return await self._get(endpoint)
 
-    async def get_scorers(self, competition: str, limit: int = None) -> List[Dict]:
+    async def get_scorers(self, competition: str, limit: int = None) -> tuple[List[Dict], Dict]:
         """获取射手榜"""
         endpoint = f"/competitions/{competition}/scorers"
         if limit:
             endpoint += f"?limit={limit}"
         data = await self._get(endpoint)
-        return data.get("scorers", [])
+        return data.get("scorers", []), data.get("season", {})
 
-    async def get_standings(self, competition: str) -> List:
+    async def get_standings(self, competition: str) -> tuple[List, Dict]:
         """获取积分榜"""
         endpoint = f"/competitions/{competition}/standings"
         data = await self._get(endpoint)
-        # API直接返回列表，不是字典
+        # API直接返回列表，不是字典 (Some endpoints might, but standard is dict)
         if isinstance(data, list):
-            return data
+            return data, {}
         # 备用：如果是字典，取standings字段
-        return data.get("standings", [])
+        return data.get("standings", []), data.get("season", {})
 
     async def get_teams(self, competition: str, limit: int = 100) -> List[Dict]:
         """获取联赛球队"""
