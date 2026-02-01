@@ -66,13 +66,8 @@ curl -H "X-API-KEY: YOUR_SECRET_KEY" ...
 
 📧 **商务联络**: [KEithWYong@Gmail.com](mailto:KEithWYong@Gmail.com)
 
-<!-- 微信二维码区域：您可以直接将图片拖拽到这里进行替换 -->
-<div align="center">
-  <img src="https://via.placeholder.com/200x200?text=WeChat+QR+Code" alt="添加微信号" width="200" />
-  <p>（扫码添加微信，备注：API合作）</p>
-</div>
-
 ---
+
 
 ## 🛠️ 本地部署 (For Developers)
 
@@ -118,10 +113,6 @@ If this project helps you, consider buying me a coffee to keep the server runnin
   </table>
   
   <br/>
-  
-  <a href="https://www.buymeacoffee.com/KeithWYong">
-    <img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black" alt="Buy Me a Coffee" />
-  </a>
 </div>
 
 ---
