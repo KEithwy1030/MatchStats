@@ -109,6 +109,22 @@ async def get_predictions(request: Request):
         import traceback
         return f"<h1>页面错误: {str(e)}</h1><pre>{traceback.format_exc()}</pre>"
 
+@app.middleware("http")
+async def api_key_middleware(request: Request, call_next):
+    """API 访问控制中间件"""
+    # 仅拦截 /api 开头的请求
+    if request.url.path.startswith("/api") and not request.url.path.startswith("/api/system/status"):
+        api_key = request.headers.get("X-API-KEY")
+        if api_key != settings.INTERNAL_API_KEY:
+            from fastapi.responses import JSONResponse
+            return JSONResponse(
+                status_code=401,
+                content={"detail": "Unauthorized: 访问受限。如需商用请联系管理员获取 API Key。"}
+            )
+    
+    response = await call_next(request)
+    return response
+
 # 注册路由
 app.include_router(web_router)      # Web界面路由（包含首页）
 app.include_router(fd_router)       # Football-Data API

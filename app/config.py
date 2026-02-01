@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     # Supabase (Cloud Database)
     SUPABASE_URL: str = ""
     SUPABASE_KEY: str = ""
+    # 从环境变量获取 API Key，如果没有设置，则默认为空（意味着无人能访问，或者您可以留一个只有您知道的默认备用）
+    INTERNAL_API_KEY: str = os.getenv("INTERNAL_API_KEY", "SET_YOUR_KEY_IN_ENV_VARS")
 
     # 数据库
     DB_PATH: str = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "matchstats.db")

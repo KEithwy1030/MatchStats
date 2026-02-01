@@ -48,7 +48,22 @@ BASE_TEMPLATE = '''<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{title} - MatchStats</title>
+    <!-- SEO 核心标签 -->
+    <title>{title} - MatchStats 足球数据中心 | 实时比分、积分榜与预测</title>
+    <meta name="description" content="MatchStats 提供全球顶级足球联赛（英超、西甲、意甲、德甲、欧冠）的实时比分、积分榜、射手榜及最新数据预测。数据源自官网，每20分钟自动更新。">
+    <meta name="keywords" content="足球比分, 实时比分, 足球积分榜, 英超数据, 足球预测, 竞彩比分, MatchStats">
+    <meta name="author" content="MatchStats Team">
+    
+    <!-- 社交媒体/分享优化 (Open Graph) -->
+    <meta property="og:title" content="{title} - MatchStats 足球数据中心">
+    <meta property="og:description" content="实时追踪全球顶级足球赛事。英超、西甲、意甲比分一网打尽。">
+    <meta property="og:url" content="https://kmatch-stats.vercel.app/">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://kmatch-stats.vercel.app/static/og-image.jpg">
+    
+    <!-- 移动端优化 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0a2540">
     <style>
         :root {{
             --primary: #0a2540;

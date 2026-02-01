@@ -1,12 +1,12 @@
-name: Fast Sync (Scores & Results)
+name: Live Score Sync (Every 5 Mins)
 
 on:
   schedule:
-    - cron: '20 * * * *'  # 每小时的第20分钟运行
+    - cron: '*/5 * * * *'  # 每 5 分钟运行一次
   workflow_dispatch:
 
 jobs:
-  sync_fast:
+  sync_live:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -24,9 +24,9 @@ jobs:
           pip install -r requirements.txt
           pip install python-dotenv supabase aiosqlite postgrest httpx
 
-      - name: Run fast synchronization
+      - name: Run live synchronization
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           FD_API_TOKEN: ${{ secrets.FD_API_TOKEN }}
-        run: python scripts/sync_now.py --mode fast
+        run: python scripts/sync_now.py --mode live_only

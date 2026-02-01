@@ -15,8 +15,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 async def main():
-    parser = argparse.ArgumentParser(description="MatchStats Manual Sync Script")
-    parser.add_argument("--mode", choices=["fast", "full"], default="full", help="Sync mode: fast (scores only) or full (everything)")
+    parser.add_argument("--mode", choices=["fast", "full", "live_only"], default="full", help="Sync mode: fast (results), live_only (in-play), or full (everything)")
     args = parser.parse_args()
 
     scheduler = SyncScheduler()
@@ -25,16 +24,24 @@ async def main():
     print(f"开始同步数据 (模式: {args.mode.upper()})...")
     print("=" * 50)
 
-    if args.mode == "fast":
-        # 极速同步：只抓取变动频繁的数据
-        print("\n[1/3] 同步实时比分...")
-        await scheduler.sync_fd_live_scores()
-        
-        print("\n[2/3] 同步最近比赛结果...")
+    if args.mode == "live_only":
+        # ⭐ 超高频模式：每5分钟运行
+        # 仅消耗 1 次 API 调用，极其安全
+        print("\n[1/1] 同步实时比分 (LIVE)...")
+        count = await scheduler.sync_fd_live_scores()
+        print(f"实时比分同步完成: {count} 场")
+
+    elif args.mode == "fast":
+        # 快速同步：每30-60分钟运行
+        # 消耗约 7 次 API 调用
+        print("\n[1/3] 同步最近比赛结果...")
         await scheduler.sync_fd_results()
         
-        print("\n[3/3] 同步竞彩数据...")
+        print("\n[2/3] 同步竞彩数据...")
         await scheduler.sync_sporttery_matches()
+        
+        # 顺便也更新一下实时比分
+        await scheduler.sync_fd_live_scores()
 
     else:
         # 深度同步：全量更新

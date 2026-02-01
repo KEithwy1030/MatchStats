@@ -149,6 +149,29 @@ async def get_stats():
     )
 
 
+@system_router.post("/cron/sync_live")
+async def sync_live_cron(request: Request):
+    """
+    [内部接口] 外部定时器触发实时比分同步
+    必须在 Header 中携带 'X-API-KEY'
+    """
+    from app.scheduler import SyncScheduler
+    
+    # 鉴权：复用 INTERNAL_API_KEY
+    api_key = request.headers.get("X-API-KEY")
+    if api_key != settings.INTERNAL_API_KEY:
+        return {"status": "error", "message": "Unauthorized"}
+        
+    try:
+        scheduler = SyncScheduler()
+        # 执行实时同步
+        count = await scheduler.sync_fd_live_scores()
+        return {"status": "success", "synced_count": count, "timestamp": datetime.now().isoformat()}
+    except Exception as e:
+        logger.error(f"Cron sync failed: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+
 @system_router.get("/logs", response_model=ApiResponse[List[SyncLog]])
 async def get_logs(
     source: Optional[str] = Query(None, description="数据源 fd/sporttery"),
