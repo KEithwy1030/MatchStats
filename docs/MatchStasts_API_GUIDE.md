@@ -38,7 +38,7 @@ curl -X GET "https://kmatch-stats.vercel.app/api/matches/today" \
 | **实时比分** | `/api/matches/today` | 无 | 获取今日所有比赛的动态比分、红黄牌及状态。 |
 | **赛果快报** | `/api/matches/recent` | `days`: 天数 (1-7) | 获取过去几天的历史比分，用于模型复盘。 |
 | **顶级积分榜**| `/api/standings/{code}` | `PL`(英超), `BL1`(德甲)等 | 包含胜平负、净胜球、总排名。 |
-| **金靴数据** | `/api/scorers/{code}` | 联赛代码 | 球员进球、点球、助攻统计。 |
+| **金靴数据** | `/api/v1/fd/leagues/{code}/scorers` | 联赛代码 | 球员进球、点球、助攻统计。 |
 | **竞彩深度数据**| `/api/sporttery/matches`| 无 | 包含官方对阵编号及中文本化队名。 |
 
 ---
