@@ -113,14 +113,32 @@ async def get_predictions(request: Request):
 async def api_key_middleware(request: Request, call_next):
     """API 访问控制中间件"""
     # 仅拦截 /api 开头的请求
-    if request.url.path.startswith("/api") and not request.url.path.startswith("/api/system/status"):
-        api_key = request.headers.get("X-API-KEY")
-        if api_key != settings.INTERNAL_API_KEY:
-            from fastapi.responses import JSONResponse
-            return JSONResponse(
-                status_code=401,
-                content={"detail": "Unauthorized: 访问受限。如需商用请联系管理员获取 API Key。"}
-            )
+    if request.url.path.startswith("/api"):
+        # 白名单：系统状态、主页接口
+        if request.url.path.startswith("/api/system/status") or request.url.path == "/api/v1/health":
+            return await call_next(request)
+        
+        # 鉴权逻辑：
+        # 1. GET 请求通常允许公开访问，以便前端展示数据
+        # 2. POST/PUT/DELETE 等操作必须携带 X-API-KEY
+        if request.method != "GET":
+            api_key = request.headers.get("X-API-KEY")
+            if api_key != settings.INTERNAL_API_KEY:
+                from fastapi.responses import JSONResponse
+                return JSONResponse(
+                    status_code=401,
+                    content={"detail": "Unauthorized: 写入操作受限。请在 Header 中提供正确的 X-API-KEY。"}
+                )
+        
+        # 特殊保护：虽然是 GET，但某些敏感 API (如日志) 依然需要鉴权
+        if request.url.path == "/api/v1/logs" or request.url.path == "/api/v1/stats":
+             api_key = request.headers.get("X-API-KEY")
+             if api_key != settings.INTERNAL_API_KEY:
+                 from fastapi.responses import JSONResponse
+                 return JSONResponse(
+                     status_code=401,
+                     content={"detail": "Unauthorized: 访问系统统计/日志需要 X-API-KEY。"}
+                 )
     
     response = await call_next(request)
     return response

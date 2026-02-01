@@ -13,9 +13,14 @@ supabase: Client = None
 # 初始化 Supabase 客户端
 if settings.SUPABASE_URL and settings.SUPABASE_KEY:
     try:
-        supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+        url = settings.SUPABASE_URL.strip().strip("'").strip('"')
+        key = settings.SUPABASE_KEY.strip().strip("'").strip('"')
+        supabase = create_client(url, key)
+        logger.info("Supabase 客户端初始化成功")
     except Exception as e:
         logger.error(f"Supabase init failed: {e}")
+else:
+    logger.warning("SUPABASE_URL or SUPABASE_KEY is missing in settings")
 
 async def init_db():
     """
