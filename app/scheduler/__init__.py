@@ -227,6 +227,10 @@ class SyncScheduler:
                     tables = standings_data.get('standings', [])
 
                 for table in tables:
+                    # 仅同步总积分榜 (TOTAL)，忽略 HOME/AWAY
+                    if isinstance(table, dict) and table.get('type') != 'TOTAL':
+                        continue
+                        
                     # table 可能是列表或字典
                     team_list = []
                     if isinstance(table, dict):

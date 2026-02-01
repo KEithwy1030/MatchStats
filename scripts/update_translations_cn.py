@@ -142,38 +142,34 @@ TEAM_NAME_DICT = {
 };
 
 def run():
-    print(f"Connecting to {settings.DB_PATH}")
-    conn = sqlite3.connect(settings.DB_PATH)
-    cursor = conn.cursor()
-    
-    # 1. Add column if not exists
-    try:
-        cursor.execute("SELECT name_cn FROM fd_teams LIMIT 1")
-    except sqlite3.OperationalError:
-        print("Adding name_cn column to fd_teams...")
-        cursor.execute("ALTER TABLE fd_teams ADD COLUMN name_cn TEXT")
-        conn.commit()
+    from app.repositories import FDRepository
+    import asyncio
 
-    # 2. Update data
-    print("Updating translations...")
-    updated_count = 0
-    for eng_name, cn_name in TEAM_NAME_DICT.items():
-        cursor.execute("""
-            UPDATE fd_teams 
-            SET name_cn = ? 
-            WHERE name = ? OR short_name = ?
-        """, (cn_name, eng_name, eng_name))
-        updated_count += cursor.rowcount
-    
-    conn.commit()
-    print(f"Updated {updated_count} records.")
-    
-    # Verify
-    cursor.execute("SELECT name, name_cn FROM fd_teams WHERE name_cn IS NOT NULL LIMIT 5")
-    for row in cursor.fetchall():
-        print(f"Sample: {row[0]} -> {row[1]}")
+    async def main():
+        repo = FDRepository()
+        print("Updating translations in Supabase...")
         
-    conn.close()
+        updated_count = 0
+        for eng_name, cn_name in TEAM_NAME_DICT.items():
+            # Find the team by name or short_name
+            # Then update name_cn
+            try:
+                # We can't do a single update with a join easily here, so we update by name
+                # Since fd_teams is small (~100 teams), this is fine
+                res = repo.client.table('fd_teams').update({'name_cn': cn_name}).or_(f'name.eq."{eng_name}",short_name.eq."{eng_name}"').execute()
+                if res.data:
+                    updated_count += len(res.data)
+            except Exception as e:
+                print(f"Error updating {eng_name}: {e}")
+                
+        print(f"Updated {updated_count} records in Supabase.")
+        
+        # Verify
+        res = repo.client.table('fd_teams').select("name, name_cn").not_.is_("name_cn", "null").limit(5).execute()
+        for row in res.data:
+            print(f"Sample: {row['name']} -> {row['name_cn']}")
+
+    asyncio.run(main())
 
 if __name__ == "__main__":
     run()

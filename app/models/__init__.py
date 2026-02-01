@@ -48,6 +48,10 @@ class FDMatch(BaseModel):
     away_team_id: Optional[int] = None
     home_team_name: Optional[str] = None
     away_team_name: Optional[str] = None
+    home_team_name_cn: Optional[str] = None
+    away_team_name_cn: Optional[str] = None
+    home_team_logo: Optional[str] = None
+    away_team_logo: Optional[str] = None
     match_date: str
     status: Optional[str] = None
     home_score: Optional[int] = None
@@ -59,6 +63,7 @@ class FDStanding(BaseModel):
     league_code: str
     team_id: int
     team_name: str
+    team_name_cn: Optional[str] = None
     season: Optional[int] = None
     position: Optional[int] = None
     played_games: Optional[int] = None
@@ -79,6 +84,7 @@ class FDScorer(BaseModel):
     player_name: str
     team_id: int
     team_name: str
+    team_name_cn: Optional[str] = None
     position: Optional[int] = None
     goals: Optional[int] = 0
     assists: Optional[int] = 0

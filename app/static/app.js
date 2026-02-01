@@ -11,7 +11,7 @@ const app = createApp({
 
         // Filters
         const activeSource = ref('fd'); // 'fd' or 'sporttery'
-        const activeLeague = ref('ALL');
+        const activeLeague = ref('PL');
         const matchFilter = ref('ALL'); // 'ALL', 'LIVE', 'FINISHED'
 
         // Config - 联赛名称汉化
@@ -112,7 +112,7 @@ const app = createApp({
         const activeTab = ref('standings'); // 'standings' or 'scorers'
 
         const fetchStandings = async () => {
-            if (activeSource.value !== 'fd') {
+            if (activeSource.value !== 'fd' || activeLeague.value === 'ALL') {
                 standings.value = [];
                 return;
             }
@@ -128,7 +128,7 @@ const app = createApp({
         };
 
         const fetchScorers = async () => {
-            if (activeSource.value !== 'fd') {
+            if (activeSource.value !== 'fd' || activeLeague.value === 'ALL') {
                 scorers.value = [];
                 return;
             }

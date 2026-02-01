@@ -139,7 +139,7 @@
                                     </div>
                                     <div class="m-teams">
                                         <div class="m-team home">
-                                            <span>{{ m.home_team_name }}</span>
+                                            <span>{{ m.home_team_name_cn || m.home_team_name }}</span>
                                             <img v-if="m.home_team_logo" :src="m.home_team_logo" class="team-logo"
                                                 alt="">
                                         </div>
@@ -153,7 +153,7 @@
                                         <div class="m-team away">
                                             <img v-if="m.away_team_logo" :src="m.away_team_logo" class="team-logo"
                                                 alt="">
-                                            <span>{{ m.away_team_name }}</span>
+                                            <span>{{ m.away_team_name_cn || m.away_team_name }}</span>
                                         </div>
                                     </div>
                                     <div class="m-status">
@@ -230,7 +230,7 @@
                                                     {{ s.position }}
                                                 </div>
                                             </td>
-                                            <td>{{ s.team_name }}</td>
+                                            <td>{{ s.team_name_cn || s.team_name }}</td>
                                             <td>{{ s.played_games }}</td>
                                             <td style="font-weight:700;">{{ s.points }}</td>
                                         </tr>
@@ -250,7 +250,8 @@
                                         <tr v-for="(s, index) in scorers" :key="index">
                                             <td style="color:var(--text-dim);">{{ index + 1 }}</td>
                                             <td style="font-weight:500;">{{ s.player_name }}</td>
-                                            <td style="font-size:12px; color:var(--text-muted);">{{ s.team_name }}</td>
+                                            <td style="font-size:12px; color:var(--text-muted);">{{ s.team_name_cn ||
+                                                s.team_name }}</td>
                                             <td style="font-weight:700; color:var(--accent);">
                                                 <template v-if="activeTab === 'assists'">
                                                     {{ s.assists || 0 }} / <span

@@ -10,11 +10,11 @@ import os
 class Settings(BaseSettings):
     """应用配置"""
 
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        case_sensitive=True,
-        env_file_encoding="utf-8"
-    )
+    class Config:
+        env_file = ".env"
+        case_sensitive = True
+        env_file_encoding = "utf-8"
+        extra = "allow" # 允许额外字段以防万一
 
     # API Token
     FD_API_TOKEN: str = ""
