@@ -30,10 +30,11 @@ async def get_fd_matches(
     date: Optional[str] = Query(None, description="日期 YYYY-MM-DD"),
     league: Optional[str] = Query(None, description="联赛代码"),
     status: Optional[str] = Query(None, description="状态 SCHEDULED/LIVE/FINISHED"),
-    limit: int = Query(100, ge=1, le=500)
+    limit: int = Query(100, ge=1, le=500),
+    lang: Optional[str] = Query('en', description="语言: en=英文, zh=中文")
 ):
-    """获取比赛列表"""
-    matches = await fd_repo.get_matches(date=date, league=league, status=status, limit=limit)
+    """获取比赛列表 (支持多语言)"""
+    matches = await fd_repo.get_matches(date=date, league=league, status=status, limit=limit, lang=lang)
     return ApiResponse(data=matches, total=len(matches))
 
 
@@ -62,21 +63,26 @@ async def get_fd_leagues():
 
 
 @fd_router.get("/leagues/{code}/standings", response_model=ApiResponse[List[FDStanding]])
-async def get_fd_standings(code: str, season: Optional[int] = None):
-    """获取积分榜"""
-    standings = await fd_repo.get_standings(code, season)
+async def get_fd_standings(
+    code: str,
+    season: Optional[int] = None,
+    lang: Optional[str] = Query('en', description="语言: en=英文, zh=中文")
+):
+    """获取积分榜 (支持多语言)"""
+    standings = await fd_repo.get_standings(code, season, lang=lang)
     return ApiResponse(data=standings, total=len(standings))
 
 
 @fd_router.get("/leagues/{code}/scorers", response_model=ApiResponse[List[FDScorer]])
 async def get_fd_scorers(
-    code: str, 
-    season: Optional[int] = None, 
-    order_by: str = Query('goals', pattern='^(goals|assists)$')
+    code: str,
+    season: Optional[int] = None,
+    order_by: str = Query('goals', pattern='^(goals|assists)$'),
+    lang: Optional[str] = Query('en', description="语言: en=英文, zh=中文")
 ):
-    """获取射手榜/助攻榜"""
-    logger.info(f"Fetching scorers for {code}, order_by={order_by}")
-    scorers = await fd_repo.get_scorers(code, season, order_by=order_by)
+    """获取射手榜/助攻榜 (支持多语言)"""
+    logger.info(f"Fetching scorers for {code}, order_by={order_by}, lang={lang}")
+    scorers = await fd_repo.get_scorers(code, season, order_by=order_by, lang=lang)
     return ApiResponse(data=scorers, total=len(scorers))
 
 

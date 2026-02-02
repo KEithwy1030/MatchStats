@@ -1,6 +1,6 @@
 import sys
 import os
-import sqlite3
+from datetime import datetime
 
 # Ensure app can be imported
 sys.path.append(os.getcwd())
@@ -147,27 +147,50 @@ def run():
 
     async def main():
         repo = FDRepository()
-        print("Updating translations in Supabase...")
-        
+        print("Updating translations in Supabase (new i18n table)...")
+
         updated_count = 0
         for eng_name, cn_name in TEAM_NAME_DICT.items():
-            # Find the team by name or short_name
-            # Then update name_cn
+            # 先找到对应的 team_id
             try:
-                # We can't do a single update with a join easily here, so we update by name
-                # Since fd_teams is small (~100 teams), this is fine
-                res = repo.client.table('fd_teams').update({'name_cn': cn_name}).or_(f'name.eq."{eng_name}",short_name.eq."{eng_name}"').execute()
-                if res.data:
-                    updated_count += len(res.data)
+                teams_res = repo.client.table('fd_teams').select("fd_id").or_(
+                    f'name.eq."{eng_name}",short_name.eq."{eng_name}"'
+                ).execute()
+
+                if teams_res.data:
+                    for team in teams_res.data:
+                        team_id = team['fd_id']
+
+                        # 插入或更新翻译表（使用 UPSERT）
+                        try:
+                            repo.client.table('fd_teams_i18n').upsert({
+                                'team_id': team_id,
+                                'lang_code': 'zh-CN',
+                                'name_translated': cn_name,
+                                'updated_at': datetime.now().isoformat()
+                            }, on_conflict="team_id,lang_code").execute()
+
+                            updated_count += 1
+                            print(f"✓ Updated {eng_name} -> {cn_name}")
+                        except Exception as e:
+                            print(f"Error inserting translation for {eng_name}: {e}")
             except Exception as e:
-                print(f"Error updating {eng_name}: {e}")
-                
-        print(f"Updated {updated_count} records in Supabase.")
-        
-        # Verify
-        res = repo.client.table('fd_teams').select("name, name_cn").not_.is_("name_cn", "null").limit(5).execute()
+                print(f"Error finding team {eng_name}: {e}")
+
+        print(f"\n✓ Updated/Inserted {updated_count} translations in fd_teams_i18n.")
+
+        # 验证结果
+        print("\n📝 Verification samples:")
+        res = repo.client.table('fd_teams_i18n').select(
+            "team_id, name_translated"
+        ).eq('lang_code', 'zh-CN').limit(5).execute()
+
         for row in res.data:
-            print(f"Sample: {row['name']} -> {row['name_cn']}")
+            print(f"  Team ID {row['team_id']}: {row['name_translated']}")
+
+        # 统计
+        count_res = repo.client.table('fd_teams_i18n').select('id', count='exact').eq('lang_code', 'zh-CN').execute()
+        print(f"\n📊 Total translations: {count_res.count}")
 
     asyncio.run(main())
 
