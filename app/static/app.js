@@ -85,7 +85,7 @@ const app = createApp({
                     ? '/api/v1/fd/matches'
                     : '/api/v1/sporttery/matches';
 
-                const params = { limit: 100 };
+                const params = { limit: 100, lang: 'zh' };
 
                 // Add League filter for FD
                 if (activeSource.value === 'fd' && activeLeague.value && activeLeague.value !== 'ALL') {
@@ -117,7 +117,9 @@ const app = createApp({
                 return;
             }
             try {
-                const res = await axios.get(`/api/v1/fd/leagues/${activeLeague.value}/standings`);
+                const res = await axios.get(`/api/v1/fd/leagues/${activeLeague.value}/standings`, {
+                    params: { lang: 'zh' }
+                });
                 const data = res.data.data || [];
                 console.log(`Fetched ${data.length} standings items for ${activeLeague.value}`);
                 standings.value = data;
@@ -135,7 +137,7 @@ const app = createApp({
             try {
                 const orderBy = activeTab.value === 'assists' ? 'assists' : 'goals';
                 const res = await axios.get(`/api/v1/fd/leagues/${activeLeague.value}/scorers`, {
-                    params: { order_by: orderBy }
+                    params: { order_by: orderBy, lang: 'zh' }
                 });
                 const data = res.data.data || [];
                 scorers.value = data;
