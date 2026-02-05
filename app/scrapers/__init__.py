@@ -5,7 +5,7 @@ import aiohttp
 import asyncio
 import logging
 from typing import List, Dict, Optional
-from datetime import datetime
+from datetime import datetime, timedelta
 from app.config import settings
 
 logger = logging.getLogger(__name__)
@@ -145,6 +145,7 @@ class SportteryScraper:
     """竞彩官网数据抓取器"""
 
     API_URL = "https://webapi.sporttery.cn/gateway/uniform/football/getMatchListV1.qry?clientCode=3001"
+    RESULT_API_URL = "https://webapi.sporttery.cn/gateway/uniform/football/getUniformMatchResultV1.qry?matchPage=0"
 
     def __init__(self):
         self.headers = {
@@ -192,6 +193,50 @@ class SportteryScraper:
         except Exception as e:
             logger.error(f"竞彩API请求失败: {e}")
             return []
+
+    async def get_match_results(self) -> List[Dict]:
+        """使用高级接口获取最近3天的全量比分结果 (单次100场)"""
+        logger.info("请求竞彩高级结果 API (3日动态窗口)")
+        
+        # 动态计算日期范围：今天及前3天
+        end_date = datetime.now().strftime('%Y-%m-%d')
+        start_date = (datetime.now() - timedelta(days=3)).strftime('%Y-%m-%d')
+        
+        # 使用 pageSize=100 确保覆盖周末高峰
+        api_url = f"https://webapi.sporttery.cn/gateway/uniform/football/getUniformMatchResultV1.qry?matchBeginDate={start_date}&matchEndDate={end_date}&leagueId=&pageSize=100&pageNo=1&isFix=0&matchPage=1&pcOrWap=1"
+        
+        results = []
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(api_url, headers=self.headers,
+                                      timeout=aiohttp.ClientTimeout(total=15)) as response:
+                    if response.status != 200:
+                        logger.error(f"竞彩高级结果API返回状态: {response.status}")
+                        return []
+
+                    data = await response.json()
+                    if not data.get('success'):
+                        logger.error(f"竞彩高级结果API返回失败: {data}")
+                        return []
+
+                    match_list = data.get('value', {}).get('matchResult', [])
+                    for item in match_list:
+                        results.append({
+                            'match_code': item.get('matchNumStr'),
+                            'home_team': item.get('homeTeam'),
+                            'away_team': item.get('awayTeam'),
+                            'group_date': item.get('matchDate'),
+                            'actual_score': item.get('sectionsNo999'),
+                            'half_score': item.get('sectionsNo1'),
+                            'status': 'finished'
+                        })
+                
+                logger.info(f"竞彩高级结果API共获取到 {len(results)} 场比分")
+                return results
+
+        except Exception as e:
+            logger.error(f"竞彩高级结果API请求失败: {e}")
+            return results
 
     def _parse_match(self, item: Dict, business_date: str) -> Optional[Dict]:
         """解析单场比赛"""

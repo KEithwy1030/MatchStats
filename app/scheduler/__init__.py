@@ -108,12 +108,22 @@ class SyncScheduler:
         )
 
         # 竞彩任务
+        # 1. 每 2 小时同步一次赛程 (确保捕获所有新上架比赛，不受页面消除影响)
         self.scheduler.add_job(
             self.sync_sporttery_matches,
             'interval',
-            minutes=settings.UPDATE_SPORTTERY,
-            id='sporttery_matches',
-            name='同步竞彩比赛数据'
+            hours=2,
+            id='sporttery_matches_sync',
+            name='定时同步竞彩赛程'
+        )
+
+        # 2. 每 30 分钟同步一次比分结果 (稳定回填)
+        self.scheduler.add_job(
+            self.sync_sporttery_results,
+            'interval',
+            minutes=30,
+            id='sporttery_results_sync',
+            name='定时回填竞彩比分'
         )
 
         self.scheduler.start()
@@ -423,6 +433,29 @@ class SyncScheduler:
             return total
 
         return await self._log_task("sporttery", "matches", task)
+
+    async def sync_sporttery_results(self):
+        """同步竞彩比分结果"""
+        async def task():
+            logger.info("开始同步竞彩比分结果...")
+            results = await self.sporttery_scraper.get_match_results()
+            total = 0
+
+            for res in results:
+                success = await self.sporttery_repo.update_match_score(
+                    res['match_code'],
+                    res['home_team'],
+                    res['away_team'],
+                    res['actual_score'],
+                    res['half_score']
+                )
+                if success:
+                    total += 1
+
+            logger.info(f"竞彩比分同步完成: {total} 场")
+            return total
+
+        return await self._log_task("sporttery", "results", task)
 
     async def sync_fd_competitions(self):
         """同步 FD 联赛列表和详情"""

@@ -2,7 +2,7 @@
 数据访问层 (Supabase 云数据库版)
 """
 from typing import List, Optional, Dict, Any
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 from app.config import settings
 from app.database import supabase
@@ -459,10 +459,34 @@ class SportteryRepository(BaseRepository):
                 'half_score': match.get('half_score'),
                 'updated_at': datetime.now().isoformat()
             }
-            self.client.table('sporttery_matches').upsert(data, on_conflict="match_code").execute()
+            self.client.table('sporttery_matches').upsert(data, on_conflict="group_date,match_code").execute()
             return True
         except Exception as e:
             logger.error(f"Supabase 保存竞彩数据失败: {e}")
+            return False
+
+    async def update_match_score(self, match_code: str, home_team: str, away_team: str, actual_score: str, half_score: str) -> bool:
+        """更新比赛比分 (基于编号+队名双重锁定，彻底解决日期时差问题)"""
+        try:
+            data = {
+                'actual_score': actual_score,
+                'half_score': half_score,
+                'status': 'finished',
+                'updated_at': datetime.now().isoformat()
+            }
+            
+            # 使用编号+主队名+客队名进行锁定，这是全网最稳的匹配方式
+            # 这三个属性加在一起，在短时间内绝对具备全球唯一性
+            self.client.table('sporttery_matches') \
+                .update(data) \
+                .eq('match_code', match_code) \
+                .eq('home_team', home_team) \
+                .eq('away_team', away_team) \
+                .execute()
+                
+            return True
+        except Exception as e:
+            logger.error(f"Supabase 更新竞彩比分失败 ({match_code}): {e}")
             return False
 
     async def get_matches(self, date: Optional[str] = None,
@@ -491,15 +515,19 @@ class SportteryRepository(BaseRepository):
         return matches
 
     async def get_match_by_code(self, match_code: str) -> Optional[Dict]:
-        """获取单场比赛详细信息"""
-        response = self.client.table('sporttery_matches').select("*").eq('match_code', match_code).maybe_single().execute()
-        match = response.data
-        if match:
-            # 获取预测数据
-            pred_res = self.client.table('match_predictions').select("*").eq('match_id', match['id']).maybe_single().execute()
-            if pred_res.data:
-                match['prediction'] = pred_res.data
-        return match
+        """获取单场竞彩比赛详细信息"""
+        try:
+            response = self.client.table('sporttery_matches').select("*").eq('match_code', match_code).maybe_single().execute()
+            match = response.data
+            if match:
+                # 获取预测数据
+                pred_res = self.client.table('match_predictions').select("*").eq('match_id', match['id']).maybe_single().execute()
+                if pred_res.data:
+                    match['prediction'] = pred_res.data
+            return match
+        except Exception as e:
+            logger.error(f"获取单场竞彩比赛失败 ({match_code}): {e}")
+            return None
 
     async def get_stats(self) -> Dict:
         """获取统计"""
