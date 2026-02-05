@@ -476,7 +476,30 @@ class SportteryRepository(BaseRepository):
             query = query.eq('status', status.lower())
         
         response = query.order('match_time', desc=False).limit(limit).execute()
-        return response.data
+        matches = response.data
+
+        if matches:
+            match_ids = [m['id'] for m in matches]
+            # 批量获取预测数据
+            pred_res = self.client.table('match_predictions').select("*").in_('match_id', match_ids).execute()
+            pred_map = {p['match_id']: p for p in pred_res.data}
+            
+            for m in matches:
+                if m['id'] in pred_map:
+                    m['prediction'] = pred_map[m['id']]
+        
+        return matches
+
+    async def get_match_by_code(self, match_code: str) -> Optional[Dict]:
+        """获取单场比赛详细信息"""
+        response = self.client.table('sporttery_matches').select("*").eq('match_code', match_code).maybe_single().execute()
+        match = response.data
+        if match:
+            # 获取预测数据
+            pred_res = self.client.table('match_predictions').select("*").eq('match_id', match['id']).maybe_single().execute()
+            if pred_res.data:
+                match['prediction'] = pred_res.data
+        return match
 
     async def get_stats(self) -> Dict:
         """获取统计"""

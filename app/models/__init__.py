@@ -93,6 +93,7 @@ class FDScorer(BaseModel):
 # 竞彩模型
 class SportteryMatch(BaseModel):
     """竞彩比赛"""
+    id: Optional[int] = None
     match_code: str
     group_date: str
     home_team: str
@@ -102,6 +103,7 @@ class SportteryMatch(BaseModel):
     status: str = "pending"
     actual_score: Optional[str] = None
     half_score: Optional[str] = None
+    prediction: Optional[Dict] = None
 
 
 # 系统模型
