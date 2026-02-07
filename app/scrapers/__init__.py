@@ -221,13 +221,41 @@ class SportteryScraper:
 
                     match_list = data.get('value', {}).get('matchResult', [])
                     for item in match_list:
+                        match_date_str = item.get('matchDate')
+                        match_time_str = item.get('matchTime')
+                        match_code = item.get('matchNumStr', '')
+                        
+                        # [Business Logic Fix] 
+                        # 官方结果接口给的是自然日(matchDate)，我们需要转换成竞彩业务日(group_date)
+                        # 逻辑：如果是凌晨踢的比赛(0-11点)，且编号是前一天的，则 group_date 需要减一天
+                        group_date = match_date_str
+                        try:
+                            if match_code and len(match_code) >= 2:
+                                weekday_map = {"周一": 0, "周二": 1, "周三": 2, "周四": 3, "周五": 4, "周六": 5, "周日": 6}
+                                code_weekday = weekday_map.get(match_code[:2])
+                                
+                                if code_weekday is not None:
+                                    dt = datetime.strptime(match_date_str, "%Y-%m-%d")
+                                    # 如果自然日是周四(3)，但编号是周三(2)，则业务日应该是周三
+                                    current_weekday = dt.weekday()
+                                    if current_weekday != code_weekday:
+                                        # 简单的日期回退，确保 group_date 匹配编号
+                                        days_diff = (current_weekday - code_weekday + 7) % 7
+                                        if days_diff == 1: # 只处理相差一天的，防止逻辑跨度过大
+                                            dt = dt - timedelta(days=1)
+                                            group_date = dt.strftime("%Y-%m-%d")
+                        except Exception as e:
+                            logger.error(f"计算业务日期失败: {e}")
+
+                        full_match_time = f"{match_date_str} {match_time_str}" if match_date_str and match_time_str else None
+
                         results.append({
-                            'match_code': item.get('matchNumStr'),
+                            'match_code': match_code,
                             'home_team': item.get('homeTeam'),
                             'away_team': item.get('awayTeam'),
-                            'league': item.get('leagueName'),  # Added league for completeness
-                            'group_date': item.get('matchDate'),
-                            'match_time': item.get('matchTime'), # Critical Fix: Add match_time
+                            'league': item.get('leagueName'),
+                            'group_date': group_date, # 使用计算出的业务日期
+                            'match_time': full_match_time, 
                             'actual_score': item.get('sectionsNo999'),
                             'half_score': item.get('sectionsNo1'),
                             'status': 'finished'
