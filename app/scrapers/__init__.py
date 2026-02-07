@@ -225,7 +225,9 @@ class SportteryScraper:
                             'match_code': item.get('matchNumStr'),
                             'home_team': item.get('homeTeam'),
                             'away_team': item.get('awayTeam'),
+                            'league': item.get('leagueName'),  # Added league for completeness
                             'group_date': item.get('matchDate'),
+                            'match_time': item.get('matchTime'), # Critical Fix: Add match_time
                             'actual_score': item.get('sectionsNo999'),
                             'half_score': item.get('sectionsNo1'),
                             'status': 'finished'

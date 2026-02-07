@@ -453,12 +453,18 @@ class SportteryRepository(BaseRepository):
                 'home_team': match.get('home_team'),
                 'away_team': match.get('away_team'),
                 'league': match.get('league'),
-                'match_time': match.get('match_time'),
+                # 'match_time': match.get('match_time'), # REMOVED: Handled conditionally below
                 'status': match.get('status', 'pending'),
                 'actual_score': match.get('actual_score'),
                 'half_score': match.get('half_score'),
                 'updated_at': datetime.now().isoformat()
             }
+            
+            # 只有当抓取源提供了有效时间时才更新 match_time
+            # 防止"比分接口"（不带时间）覆盖掉"赛程接口"（带时间）的记录
+            if match.get('match_time'):
+                data['match_time'] = match.get('match_time')
+
             self.client.table('sporttery_matches').upsert(data, on_conflict="group_date,match_code").execute()
             return True
         except Exception as e:
