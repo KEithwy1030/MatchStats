@@ -85,6 +85,52 @@ pip install -r requirements.txt
 # 需要自行申请 Supabase 和 Football-Data API Token
 ```
 
+---
+
+## 📖 API 快速开始 (Quick Start)
+
+### 生产环境 (Production)
+
+**服务地址**: `https://kmatch-stats.vercel.app`
+
+**快速测试** (3分钟上手):
+
+```bash
+# 1. 获取今日中文比赛数据
+curl -X GET "https://kmatch-stats.vercel.app/api/v1/fd/matches?lang=zh&limit=5" \
+     -H "X-API-KEY: mk_live_2024_secure_key_xyz123"
+
+# 2. 获取英超积分榜（英文）
+curl -X GET "https://kmatch-stats.vercel.app/api/v1/fd/leagues/PL/standings?lang=en" \
+     -H "X-API-KEY: mk_live_2024_secure_key_xyz123"
+
+# 3. 获取射手榜（中文）
+curl -X GET "https://kmatch-stats.vercel.app/api/v1/fd/leagues/PL/scorers?lang=zh" \
+     -H "X-API-KEY: mk_live_2024_secure_key_xyz123"
+```
+
+### 多语言支持
+
+所有主要 API 端点现已支持中英文切换：
+
+| 端点 | 功能 | 多语言 |
+|------|------|--------|
+| `/api/v1/fd/matches` | 比赛列表 | ✅ |
+| `/api/v1/fd/leagues/{code}/standings` | 积分榜 | ✅ |
+| `/api/v1/fd/leagues/{code}/scorers` | 射手榜 | ✅ |
+
+**使用方法**: 添加 `lang` 查询参数
+- `lang=en` → 英文（默认）
+- `lang=zh` → 中文
+
+### 完整文档
+
+📘 **查看完整 API 文档**: [docs/API.md](./docs/API.md)
+- 包含所有 API 参数说明
+- Python/JavaScript 代码示例
+- FAQ、时区处理、错误处理
+
+---
 
 ## ❤️ Support the Developer
 

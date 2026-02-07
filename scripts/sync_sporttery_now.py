@@ -4,7 +4,11 @@
 import sys
 import os
 import asyncio
-sys.path.append(os.getcwd())
+# 添加项目根目录到环境变量
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, project_root)
+os.chdir(project_root)  # 切换工作目录到项目根目录，方便读取 .env 等文件
+
 
 from app.scrapers import SportteryScraper
 from app.repositories import SportteryRepository
@@ -17,42 +21,53 @@ async def sync_sporttery():
     scraper = SportteryScraper()
     repo = SportteryRepository()
 
-    print("\n[1] 调用竞彩官网 API...")
+    print("\n[1] 同步赛程数据 (get_matches)...")
     matches = await scraper.get_matches()
+    print(f"获取到 {len(matches)} 场赛程")
 
-    print(f"获取到 {len(matches)} 场比赛")
+    print("\n[2] 同步比分结果 (get_match_results)...")
+    results = await scraper.get_match_results()
+    print(f"获取到 {len(results)} 场比分记录")
 
-    if len(matches) == 0:
-        print("[ERROR] 未能获取到任何比赛数据")
-        return
-
-    print("\n[2] 保存到 Supabase...")
+    combined_data = matches + results
+    print(f"\n[3] 汇总处理，共计 {len(combined_data)} 条记录保存到 Supabase...")
+    
     saved_count = 0
     failed_count = 0
 
-    for match in matches:
-        success = await repo.save_match(match)
+    for item in combined_data:
+        success = await repo.save_match(item)
         if success:
             saved_count += 1
         else:
             failed_count += 1
 
     print(f"\n同步完成:")
-    print(f"  成功: {saved_count} 场")
+    print(f"  成功: {saved_count} 场 (含更新)")
     print(f"  失败: {failed_count} 场")
 
     # 验证数据
-    print("\n[3] 验证数据库...")
-    db_matches = await repo.get_matches(limit=5)
-    print(f"数据库中共有 {len(db_matches)} 场比赛")
+    print("\n[4] 验证数据库比分...")
+    
+    # 查找最近有比分的 5 场
+    import os
+    from dotenv import load_dotenv
+    from supabase import create_client
+    load_dotenv()
+    
+    url = os.getenv('SUPABASE_URL')
+    key = os.getenv('SUPABASE_KEY')
+    if not url or not key:
+        print("[WARN] 环境变量加载失败，跳过验证步骤。")
+        return
 
-    if len(db_matches) > 0:
-        print("\n最新的 3 场比赛:")
-        for i, match in enumerate(db_matches[:3], 1):
-            print(f"\n  {i}. {match.get('league')}")
-            print(f"     {match.get('home_team')} vs {match.get('away_team')}")
-            print(f"     时间: {match.get('match_time')}")
-            print(f"     状态: {match.get('status')}")
+    s = create_client(url, key)
+    res = s.table('sporttery_matches').select('home_team, away_team, match_time, actual_score, status').not_.is_('actual_score', 'null').order('match_time', desc=True).limit(5).execute()
+    
+    if res.data:
+        print("\n最新录入的比分:")
+        for i, m in enumerate(res.data, 1):
+            print(f"  {i}. [{m['match_time']}] {m['home_team']} {m['actual_score']} {m['away_team']} ({m['status']})")
 
     print("\n" + "=" * 70)
 

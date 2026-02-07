@@ -136,7 +136,7 @@ async def api_key_middleware(request: Request, call_next):
 
     # 3. 指定 API 访问控制 (确保数据不被外部轻松刷取)
     # 仅允许以下路径被调用
-    allowed_api_paths = ["/api/v1/fd/", "/api/v1/health", "/api/system/status"]
+    allowed_api_paths = ["/api/v1/fd/", "/api/v1/sporttery/", "/api/v1/health", "/api/system/status"]
     
     # 权限校验
     is_path_allowed = any(request.url.path.startswith(p) for p in allowed_api_paths)

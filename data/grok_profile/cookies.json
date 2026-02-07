@@ -1,0 +1,82 @@
+[
+  {
+    "name": "_ga_KYCH4H7CJ0",
+    "value": "GS2.1.s1769922111$o1$g0$t1769922111$j60$l0$h0",
+    "domain": ".world68.com",
+    "path": "/",
+    "expires": 1804482111.702817,
+    "httpOnly": false,
+    "secure": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "_ga",
+    "value": "GA1.1.1669824832.1769922112",
+    "domain": ".world68.com",
+    "path": "/",
+    "expires": 1804482111.703126,
+    "httpOnly": false,
+    "secure": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "id",
+    "value": "22684353d003015e||t=1769922113|et=730|cs=002213fd48ff87a9de258e728d",
+    "domain": ".doubleclick.net",
+    "path": "/",
+    "expires": 1804482114.240515,
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "__gads",
+    "value": "ID=eb21d5394bd995bf:T=1769922112:RT=1769922112:S=ALNI_MYaVAmEDIKDz_BFAUf9A6F4f6hpOg",
+    "domain": ".world68.com",
+    "path": "/",
+    "expires": 1803618112,
+    "httpOnly": false,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "__gpi",
+    "value": "UID=000011ef8890cd22:T=1769922112:RT=1769922112:S=ALNI_MY8uSK40uVgKMugEt4x9m9dKtPRgw",
+    "domain": ".world68.com",
+    "path": "/",
+    "expires": 1803618112,
+    "httpOnly": false,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "__eoi",
+    "value": "ID=cf5eb851cbc73f77:T=1769922112:RT=1769922112:S=AA-AfjZNiUpBNFEUyUuQjywiZoQ-",
+    "domain": ".world68.com",
+    "path": "/",
+    "expires": 1785474112,
+    "httpOnly": false,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "FCCDCF",
+    "value": "%5Bnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5B%5B32%2C%22%5B%5C%221ba8bf41-dc69-46b9-a0a8-eadf628c2be0%5C%22%2C%5B1769922114%2C274000000%5D%5D%22%5D%5D%5D",
+    "domain": ".world68.com",
+    "path": "/",
+    "expires": 1803618115,
+    "httpOnly": false,
+    "secure": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "FCNEC",
+    "value": "%5B%5B%22AKsRol9NePcIw-8dHmp1WcwJLy80oHU9ColZt3LqhLuRqJYq1LDyvPbxyaErNIZHzzT3V6KjMW-n-c3l2NoxeHGPveRbWij6g9OwTsdXBCjUN-uStX_kbzi9fgxnPLWGs3JILy772DehtMhRLhF6zLb2E1aJ31t-jg%3D%3D%22%5D%5D",
+    "domain": ".world68.com",
+    "path": "/",
+    "expires": 1801458115,
+    "httpOnly": false,
+    "secure": false,
+    "sameSite": "Lax"
+  }
+]

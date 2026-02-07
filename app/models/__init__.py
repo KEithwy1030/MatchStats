@@ -94,12 +94,12 @@ class FDScorer(BaseModel):
 class SportteryMatch(BaseModel):
     """竞彩比赛"""
     id: Optional[int] = None
-    match_code: str
-    group_date: str
-    home_team: str
-    away_team: str
-    league: str
-    match_time: str
+    match_code: Optional[str] = None
+    group_date: Optional[str] = None
+    home_team: Optional[str] = None
+    away_team: Optional[str] = None
+    league: Optional[str] = None
+    match_time: Optional[str] = None
     status: str = "pending"
     actual_score: Optional[str] = None
     half_score: Optional[str] = None
