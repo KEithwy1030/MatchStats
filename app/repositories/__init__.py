@@ -464,6 +464,15 @@ class SportteryRepository(BaseRepository):
             # 防止"比分接口"（不带时间）覆盖掉"赛程接口"（带时间）的记录
             if match.get('match_time'):
                 data['match_time'] = match.get('match_time')
+                
+                # [Fix Grouping Mismatch]
+                # 如果有准确的 match_time，强制重写 group_date 为比赛实际发生的日期
+                # 解决：周三012 (凌晨踢) 被分到周五组的问题
+                try:
+                    dt = datetime.strptime(match.get('match_time'), "%Y-%m-%d %H:%M:%S")
+                    data['group_date'] = dt.strftime("%Y-%m-%d")
+                except:
+                    pass
 
             self.client.table('sporttery_matches').upsert(data, on_conflict="group_date,match_code").execute()
             return True

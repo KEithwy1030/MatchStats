@@ -74,8 +74,42 @@ class GrokTheUltimate:
             print("[Check] 发现运行中的 Chrome (Port 9333)")
             return True
         except:
-            print("[Check] 未发现活动浏览器，请先手动启动 Chrome 调试实例。")
-            return False
+            print("[Check] 未发现活动浏览器，正在自动启动 Chrome...")
+            try:
+                # 确保用户数据目录存在
+                if not os.path.exists(USER_DATA_DIR):
+                    os.makedirs(USER_DATA_DIR, exist_ok=True)
+
+                # 启动命令
+                cmd = [
+                    CHROME_PATH,
+                    f"--remote-debugging-port={CDP_PORT}",
+                    f"--user-data-dir={USER_DATA_DIR}",
+                    "--no-first-run",
+                    "--no-default-browser-check",
+                    # 添加常用参数以防止报错
+                    "--remote-allow-origins=*"
+                ]
+                
+                # 异步启动浏览器进程
+                self.browser_proc = subprocess.Popen(cmd)
+                
+                # 轮询等待浏览器就绪（最多等30秒）
+                print(f"    Waiting for Chrome to start on port {CDP_PORT}...")
+                for i in range(30):
+                    try:
+                        requests.get(f"{CDP_URL}/json/version", timeout=1)
+                        print(f"[Check] Chrome 启动成功！(耗时 {i+1}s)")
+                        await asyncio.sleep(2) # 再多等一下确保完全加载
+                        return True
+                    except:
+                        await asyncio.sleep(1)
+                
+                print("[x] Chrome 启动超时，请检查路径配置或端口占用。")
+                return False
+            except Exception as e:
+                print(f"[x] 启动 Chrome 失败: {e}")
+                return False
 
     # --- 3. 辅助：提取复杂的 JSON ---
     def extract_json_from_text(self, text):
@@ -102,13 +136,22 @@ class GrokTheUltimate:
             return
 
         try:
-            existing_res = self.supabase.table('match_predictions').select('match_id').eq('prediction_date', date).execute()
+            # [Fix] Logic defect: Previously checked existing predictions by `prediction_date`.
+            # If a match was predicted yesterday, checking today's date would return 0 existing, 
+            # causing a re-run (redundant).
+            # New Logic: Check by `match_id` directly to see if correct ID exists in `match_predictions`.
+            
+            match_ids = [m['id'] for m in matches]
+            # Since .in_() might hit URL length limits if too many, we batch check or just query all IDs
+            # But usually 20-50 matches is fine.
+            existing_res = self.supabase.table('match_predictions').select('match_id').in_('match_id', match_ids).execute()
+            
             existing_ids = {item['match_id'] for item in existing_res.data}
             pending_matches = [m for m in matches if m['id'] not in existing_ids]
 
             if not pending_matches:
                 print(f"============================================================")
-                print(f"[OK] 审计完成：今日 {len(matches)} 场已全部完成情报采集！")
+                print(f"[OK] 审计完成：今日 {len(matches)} 场已全部完成情报采集！(无需重复预测)")
                 print(f"============================================================")
                 return
             
@@ -239,6 +282,23 @@ class GrokTheUltimate:
 
                 print(f"\n[4/4] 专家级情报任务全部圆满完成！")
             except Exception as e: print(f"[x] Critical Failure: {e}")
+            finally:
+                self.close_browser()
+
+    def close_browser(self):
+        """关闭自动启动的浏览器进程"""
+        if hasattr(self, 'browser_proc') and self.browser_proc:
+            try:
+                print("[Cleanup] 正在关闭浏览器进程...")
+                self.browser_proc.terminate()
+                self.browser_proc.wait(timeout=5)
+                print("[Cleanup] 浏览器已关闭。")
+            except Exception as e:
+                print(f"[x] 关闭浏览器失败: {e}")
+                # 强制杀死
+                try:
+                    self.browser_proc.kill()
+                except: pass
 
 if __name__ == "__main__":
     asyncio.run(GrokTheUltimate().main_engine())
