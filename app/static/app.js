@@ -13,6 +13,7 @@ const app = createApp({
         const activeSource = ref('fd'); // 'fd' or 'sporttery'
         const activeLeague = ref('PL');
         const matchFilter = ref('ALL'); // 'ALL', 'LIVE', 'FINISHED'
+        const activeSportteryDate = ref(null);
 
         // Config - 联赛名称汉化
         const leagues = [
@@ -80,13 +81,31 @@ const app = createApp({
             }
         };
 
+        const sportteryDates = computed(() => {
+            if (activeSource.value !== 'sporttery') return [];
+            // Get unique group_dates, excluding null/undefined
+            const rawDates = matches.value
+                .map(m => m.group_date)
+                .filter(d => !!d);
+            const unique = [...new Set(rawDates)];
+            return unique.sort((a, b) => b.localeCompare(a)); // Descending order (latest first)
+        });
+
+        // Computed matches to display
+        const displayMatches = computed(() => {
+            if (activeSource.value === 'fd') return matches.value;
+            if (!activeSportteryDate.value) return matches.value;
+            return matches.value.filter(m => m.group_date === activeSportteryDate.value);
+        });
+
         const fetchMatches = async () => {
             loading.value = true;
             try {
                 const isFd = activeSource.value === 'fd';
                 let url = isFd ? '/api/v1/fd/matches' : '/api/v1/sporttery/matches';
 
-                const params = { limit: 100, lang: 'zh' };
+                // For Sporttery, we fetch more to ensure we have enough for grouping
+                const params = { limit: isFd ? 100 : 300, lang: 'zh' };
 
                 // Add League filter for FD
                 if (isFd && activeLeague.value && activeLeague.value !== 'ALL') {
@@ -98,7 +117,6 @@ const app = createApp({
                     if (isFd) {
                         params.status = matchFilter.value;
                     } else {
-                        // Sporttery mapping: SCHEDULED/LIVE -> pending, FINISHED -> finished
                         if (matchFilter.value === 'FINISHED') {
                             params.status = 'finished';
                         } else {
@@ -109,6 +127,13 @@ const app = createApp({
 
                 const res = await axios.get(url, { params });
                 matches.value = res.data.data || [];
+
+                // Set default sporttery date to latest if not set or not in current list
+                if (!isFd && sportteryDates.value.length > 0) {
+                    if (!activeSportteryDate.value || !sportteryDates.value.includes(activeSportteryDate.value)) {
+                        activeSportteryDate.value = sportteryDates.value[0];
+                    }
+                }
             } catch (e) {
                 console.error("Matches error", e);
                 matches.value = [];
@@ -169,6 +194,7 @@ const app = createApp({
 
         // Watchers
         watch(activeSource, () => {
+            activeSportteryDate.value = null; // Reset date when switching source
             fetchMatches();
             if (activeSource.value === 'fd') {
                 fetchStandings();
@@ -292,12 +318,15 @@ const app = createApp({
             loading,
             stats,
             matches,
+            displayMatches,
             standings,
             scorers,
             activeTab,
             logs,
             activeSource,
             activeLeague,
+            activeSportteryDate,
+            sportteryDates,
             matchFilter,
             leagues,
             formatDate,

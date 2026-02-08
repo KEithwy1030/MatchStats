@@ -114,6 +114,15 @@
                                     {{ l.name }}
                                 </button>
                             </div>
+
+                            <!-- Date Selector for Sporttery -->
+                            <div v-if="activeSource === 'sporttery'" class="tab-group" style="margin:0;">
+                                <button v-for="date in sportteryDates" class="tab-btn"
+                                    :class="{ active: activeSportteryDate === date }"
+                                    @click="activeSportteryDate = date">
+                                    {{ formatDate(date) }}
+                                </button>
+                            </div>
                         </div>
 
                         <div class="matches-list">
@@ -126,7 +135,7 @@
                                 当前筛选条件下暂无比赛数据
                             </div>
 
-                            <div v-for="m in matches" :key="m.id || m.match_code" class="match-item"
+                            <div v-for="m in displayMatches" :key="m.id || m.match_code" class="match-item"
                                 @click="openMatchDetails(m)" style="cursor: pointer;">
                                 <!-- FD Structure -->
                                 <template v-if="activeSource === 'fd'">
