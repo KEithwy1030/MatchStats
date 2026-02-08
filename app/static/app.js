@@ -28,10 +28,12 @@ const app = createApp({
         const statusMap = {
             'SCHEDULED': '未开赛',
             'TIMED': '未开赛',
+            'pending': '未开赛',
             'LIVE': '进行中',
             'IN_PLAY': '进行中',
             'PAUSED': '中场',
             'FINISHED': '完场',
+            'finished': '完场',
             'POSTPONED': '推迟',
             'SUSPENDED': '中断',
             'CANCELLED': '取消'
@@ -81,21 +83,28 @@ const app = createApp({
         const fetchMatches = async () => {
             loading.value = true;
             try {
-                let url = activeSource.value === 'fd'
-                    ? '/api/v1/fd/matches'
-                    : '/api/v1/sporttery/matches';
+                const isFd = activeSource.value === 'fd';
+                let url = isFd ? '/api/v1/fd/matches' : '/api/v1/sporttery/matches';
 
                 const params = { limit: 100, lang: 'zh' };
 
                 // Add League filter for FD
-                if (activeSource.value === 'fd' && activeLeague.value && activeLeague.value !== 'ALL') {
+                if (isFd && activeLeague.value && activeLeague.value !== 'ALL') {
                     params.league = activeLeague.value;
                 }
 
-                // Add Status filter
+                // Add Status filter with mapping
                 if (matchFilter.value !== 'ALL') {
-                    // Match UI filters to API query values
-                    params.status = matchFilter.value;
+                    if (isFd) {
+                        params.status = matchFilter.value;
+                    } else {
+                        // Sporttery mapping: SCHEDULED/LIVE -> pending, FINISHED -> finished
+                        if (matchFilter.value === 'FINISHED') {
+                            params.status = 'finished';
+                        } else {
+                            params.status = 'pending';
+                        }
+                    }
                 }
 
                 const res = await axios.get(url, { params });
@@ -197,41 +206,62 @@ const app = createApp({
         const showRawJson = ref(false);
 
         const openMatchDetails = async (match) => {
-            if (activeSource.value !== 'fd') return;
+            if (activeSource.value === 'fd') {
+                const tempDetail = {
+                    match_id: match.fd_id,
+                    home_team_name: match.home_team_name,
+                    away_team_name: match.away_team_name,
+                    home_score: match.home_score ?? 0,
+                    away_score: match.away_score ?? 0,
+                    status: match.status,
+                    match_date: match.match_date,
+                    lineup_home: [],
+                    lineup_away: [],
+                    bench_home: [],
+                    bench_away: [],
+                    goals: [],
+                    referee: match.referee,
+                    venue: null,
+                    prediction: match.prediction
+                };
 
-            const tempDetail = {
-                match_id: match.fd_id,
-                home_team_name: match.home_team_name,
-                away_team_name: match.away_team_name,
-                home_score: match.home_score ?? 0,
-                away_score: match.away_score ?? 0,
-                status: match.status,
-                match_date: match.match_date,
-                lineup_home: [],
-                lineup_away: [],
-                bench_home: [],
-                bench_away: [],
-                goals: [],
-                referee: match.referee,
-                venue: null
-            };
+                activeMatchDetail.value = tempDetail;
+                showModal.value = true;
+                showRawJson.value = false;
 
-            activeMatchDetail.value = tempDetail;
-            showModal.value = true;
-            showRawJson.value = false;
-
-            try {
-                const res = await axios.get(`/api/v1/fd/matches/${match.fd_id}/details`);
-                if (res.data.success && res.data.data) {
-                    const detail = res.data.data;
-                    detail.home_team_name = match.home_team_name;
-                    detail.away_team_name = match.away_team_name;
-                    detail.status = match.status;
-                    detail.match_date = match.match_date;
-                    activeMatchDetail.value = detail;
+                try {
+                    const res = await axios.get(`/api/v1/fd/matches/${match.fd_id}/details`);
+                    if (res.data.success && res.data.data) {
+                        const detail = res.data.data;
+                        detail.home_team_name = match.home_team_name;
+                        detail.away_team_name = match.away_team_name;
+                        detail.status = match.status;
+                        detail.match_date = match.match_date;
+                        detail.prediction = match.prediction;
+                        activeMatchDetail.value = detail;
+                    }
+                } catch (e) {
+                    console.error("Fetch detail error", e);
                 }
-            } catch (e) {
-                console.error("Fetch detail error", e);
+            } else {
+                // Sporttery Details
+                activeMatchDetail.value = {
+                    is_sporttery: true,
+                    home_team_name: match.home_team,
+                    away_team_name: match.away_team,
+                    home_score: match.actual_score ? match.actual_score.split(':')[0] : '-',
+                    away_score: match.actual_score ? match.actual_score.split(':')[1] : '-',
+                    status: match.status,
+                    match_date: match.match_time,
+                    prediction: match.prediction,
+                    league: match.league,
+                    match_code: match.match_code,
+                    lineup_home: [],
+                    lineup_away: [],
+                    goals: []
+                };
+                showModal.value = true;
+                showRawJson.value = false;
             }
         };
 

@@ -1,4 +1,0 @@
-Prompt: What model are you?
-
-Response:
-I'm Grok 4, built by xAI. 😄

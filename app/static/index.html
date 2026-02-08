@@ -127,8 +127,7 @@
                             </div>
 
                             <div v-for="m in matches" :key="m.id || m.match_code" class="match-item"
-                                @click="openMatchDetails(m)"
-                                :style="{ cursor: activeSource === 'fd' ? 'pointer' : 'default' }">
+                                @click="openMatchDetails(m)" style="cursor: pointer;">
                                 <!-- FD Structure -->
                                 <template v-if="activeSource === 'fd'">
                                     <div class="m-time">
@@ -170,6 +169,8 @@
                                 <!-- Sporttery Structure -->
                                 <template v-else>
                                     <div class="m-time">
+                                        <div style="font-size:12px; font-weight:600; color:var(--primary);">{{
+                                            m.match_code }}</div>
                                         <div>{{ formatTime(m.match_time) }}</div>
                                         <div style="font-size:10px; opacity:0.6;">{{ formatDate(m.match_time) }}</div>
                                     </div>
@@ -185,8 +186,17 @@
                                         </div>
                                     </div>
                                     <div class="m-status">
-                                        <span class="badge" :class="{'finished': m.match_status === 'Final'}">{{
-                                            m.league }}</span>
+                                        <div
+                                            style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+                                            <span class="badge"
+                                                :class="{ 'finished': m.status === 'finished', 'scheduled': m.status === 'pending' }">
+                                                {{ getStatusText(m.status) }}
+                                            </span>
+                                            <span v-if="m.prediction" class="badge"
+                                                style="background:rgba(0,184,148,0.1); color:var(--accent); font-size:10px;">
+                                                <i class="ph-fill ph-brain" style="margin-right:2px;"></i> AI情报
+                                            </span>
+                                        </div>
                                     </div>
                                 </template>
                             </div>
@@ -334,11 +344,24 @@
                                 <div class="score-team">
                                     <h3>{{ activeMatchDetail.away_team_name }}</h3>
                                     <span class="match-meta-badge"
-                                        v-if="activeMatchDetail.lineup_away.length > 0">已公布首发</span>
+                                        v-if="activeMatchDetail.lineup_away && activeMatchDetail.lineup_away.length > 0">已公布首发</span>
                                 </div>
                             </div>
 
                             <div class="modal-body">
+                                <!-- Prediction Section (Top priority if exists) -->
+                                <div v-if="activeMatchDetail.prediction" class="card"
+                                    style="margin-bottom:20px; border:1px solid rgba(0,184,148,0.3); background:rgba(0,184,148,0.02);">
+                                    <div
+                                        style="display:flex; align-items:center; gap:8px; margin-bottom:12px; color:var(--accent);">
+                                        <i class="ph-fill ph-brain" style="font-size:20px;"></i>
+                                        <h4 style="margin:0;">Grok AI 深度情报分析</h4>
+                                    </div>
+                                    <div
+                                        style="font-size:14px; line-height:1.6; white-space: pre-wrap; color:var(--text-main);">
+                                        {{ activeMatchDetail.prediction.prediction_data }}
+                                    </div>
+                                </div>
                                 <!-- Timeline / Goals -->
                                 <div class="timeline-section"
                                     v-if="activeMatchDetail.goals && activeMatchDetail.goals.length > 0">
