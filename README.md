@@ -12,6 +12,15 @@
 
 ---
 
+## 📢 开发者社区 (Community)
+
+欢迎加入我们的极客足球交流群，分享最新的 AI 预测模型、数据采集脚本及自动化分析心得：
+
+[![Join Telegram](https://img.shields.io/badge/Telegram-Join%20Group-blue.svg?logo=telegram)](https://t.me/oldkclub)
+> **[点击加入 t.me/oldkclub](https://t.me/oldkclub)** —— 每日同步最新 AI 深度情报报告。
+
+---
+
 ## 🚀 项目简介 (Introduction)
 
 MatchStats 是一套高可用的分布式足球数据采集与分发系统。不同于传统的单源爬虫，MatchStats 创新性地实现了 **混合数据源聚合 (Hybrid Data Aggregation)**，将全球竞技数据与本地化竞彩情报深度融合，并集成了基于 Grok 的 **AI 专家智能分析层**。
@@ -37,9 +46,6 @@ MatchStats 是一套高可用的分布式足球数据采集与分发系统。不
 *   **源 A (Football-Data)**：提供首发阵容、历史战绩、专业竞技统计。
 *   **源 B (Sporttery/China)**：集成中国竞彩官方编号、赔率指数及精准中文队名映射。
 
-### 4. 🗄️ 永久云端存储 (Supabase Cloud)
-依托 **Supabase (PostgreSQL)**，实现数据资产化，历史赛季数据永久可查，不依赖单次抓取。
-
 ---
 
 ## 🏗️ 技术架构 (Architecture)
@@ -48,16 +54,6 @@ MatchStats 是一套高可用的分布式足球数据采集与分发系统。不
 *   **Sync Logic**: 增强型 `sync_sporttery_now` 异步补账系统
 *   **Storage Layer**: Supabase Enterprise (PostgreSQL)
 *   **API Layer**: FastAPI 高性能网关（带 API Key 权限控制）
-
----
-
-## �️ 管理与维护 (Management)
-
-项目脚本已精简至生产级状态：
-*   `scripts/sync_sporttery_now.py`: 同步赛程与所有缺失比分。
-*   `scripts/grok_automated_runner.py`: 启动 AI 专家情报采集任务。
-*   `scripts/inspect_sporttery_data.py`: 数据覆盖率与完整性审计。
-*   `scripts/generate_review_md.py`: 导出今日深度情报报告。
 
 ---
 
@@ -75,20 +71,19 @@ MatchStats 遵循 **“Open Core”** 模式：核心代码完全开源；生产
 
 如果本项目为您节省了开发时间或提供了灵感，欢迎支持作者维护服务器。
 
-<div align="center">
+<div align="center\">
   <table>
     <tr>
-      <td align="center" width="200">
+      <td align="center" width="200\">
         <img src="./docs/images/alipay_qr.jpg" alt="Alipay Support" width="180" />
         <br/>
         <b>☕ Support (Alipay)</b>
       </td>
-      <td align="center" width="200">
-        <img src="./docs/images/wechat_friend_qr.png" alt="Business Contact" width="180" />
+      <td align="center\" width="200\">
+        <img src="./docs/images/wechat_friend_qr.png\" alt=\"Business Contact\" width=\"180\" />
         <br/>
         <b>🤝 Business (WeChat)</b>
       </td>
     </tr>
   </table>
 </div>
-
