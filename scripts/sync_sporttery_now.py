@@ -12,6 +12,7 @@ os.chdir(project_root)  # 切换工作目录到项目根目录，方便读取 .e
 
 from app.scrapers import SportteryScraper
 from app.repositories import SportteryRepository
+from app.notifications.webhook import webhook_client
 
 async def sync_sporttery():
     print("=" * 70)
@@ -23,10 +24,25 @@ async def sync_sporttery():
 
     print("\n[1] 同步赛程数据 (get_matches)...")
     matches = await scraper.get_matches()
+
+    if not matches:
+        print("❌ 获取赛程失败")
+        await webhook_client.notify_sync_failed(error_msg="竞彩官网无法获取赛程数据")
+        return
+
     print(f"获取到 {len(matches)} 场赛程")
+    if matches:
+        print("\n--- 采样前 2 场赛程内容 ---")
+        for m in matches[:2]:
+            print(f"ID: {m.get('match_id')}, 时间: {m.get('match_time')}, 对阵: {m.get('home_team')} vs {m.get('away_team')}")
+        print("---------------------------\n")
 
     print("\n[2] 同步比分结果 (get_match_results)...")
     results = await scraper.get_match_results()
+
+    if not results:
+        print("⚠️ 未获取到比分记录（可能无已结束比赛）")
+
     print(f"获取到 {len(results)} 场比分记录")
 
     combined_data = matches + results
@@ -45,6 +61,12 @@ async def sync_sporttery():
     print(f"\n同步完成:")
     print(f"  成功: {saved_count} 场 (含更新)")
     print(f"  失败: {failed_count} 场")
+
+    # 发送同步结果通知
+    if saved_count > 0:
+        await webhook_client.notify_sync_success(saved_count)
+    elif failed_count > 0:
+        await webhook_client.notify_sync_failed(f"保存失败 {failed_count} 条记录", retry_count=1)
 
     # 验证数据
     print("\n[4] 验证数据库比分...")

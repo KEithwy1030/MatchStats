@@ -4,6 +4,7 @@
 import aiohttp
 import asyncio
 import logging
+import json
 from typing import List, Dict, Optional
 from datetime import datetime, timedelta
 from app.config import settings
@@ -142,57 +143,62 @@ class FootballDataScraper:
 
 
 class SportteryScraper:
-    """竞彩官网数据抓取器"""
+    """竞彩官网数据抓取器 - 升级全量版"""
 
-    API_URL = "https://webapi.sporttery.cn/gateway/uniform/football/getMatchListV1.qry?clientCode=3001"
+    API_URL = "https://webapi.sporttery.cn/gateway/uniform/football/getMatchCalculatorV1.qry?clientCode=3001"
     RESULT_API_URL = "https://webapi.sporttery.cn/gateway/uniform/football/getUniformMatchResultV1.qry?matchPage=0"
 
     def __init__(self):
         self.headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
             'Accept': 'application/json, text/plain, */*',
-            'Referer': 'https://www.sporttery.cn/',
-            'Origin': 'https://www.sporttery.cn'
+            'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+            'Referer': 'https://www.sporttery.cn/jc/jsq/football/',
+            'Origin': 'https://www.sporttery.cn',
+            'Connection': 'keep-alive',
+            'Sec-Fetch-Dest': 'empty',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Site': 'same-site'
         }
 
     async def get_matches(self) -> List[Dict]:
-        """获取所有比赛"""
-        logger.info("请求竞彩官网 API")
-
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(self.API_URL, headers=self.headers,
-                                      timeout=aiohttp.ClientTimeout(total=15)) as response:
-                    if response.status != 200:
-                        logger.error(f"竞彩API返回状态: {response.status}")
-                        return []
-
-                    data = await response.json()
-
-                    if not data.get('success') and data.get('errorCode') != '0':
-                        logger.error(f"竞彩API返回失败: {data}")
-                        return []
-
-                    match_groups = data.get('value', {}).get('matchInfoList', [])
-                    matches = []
-
-                    for group in match_groups:
-                        business_date = group.get('businessDate')
-
-                        for item in group.get('subMatchList', []):
-                            match_data = self._parse_match(item, business_date)
-                            if match_data:
-                                matches.append(match_data)
-
-                    logger.info(f"竞彩API获取到 {len(matches)} 场比赛")
-                    return matches
-
-        except asyncio.TimeoutError:
-            logger.error("竞彩API请求超时")
-            return []
-        except Exception as e:
-            logger.error(f"竞彩API请求失败: {e}")
-            return []
+        """获取所有赛程 - 真正的全量、多页、防缓存模式"""
+        import time
+        logger.info("正在执行深度全量赛程抓取...")
+        
+        all_matches = {}
+        # 扫描 matchPage 1 到 2，使用 getMatchCalculatorV1 接口（getMatchListV1 已被 WAF 拦截）
+        for page in [1, 2]:
+            ts = int(time.time() * 1000)
+            url = f"{self.API_URL}&poolCode=HHAD&channel=c&matchPage={page}&_={ts}"
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url, headers=self.headers, timeout=aiohttp.ClientTimeout(total=15)) as response:
+                        if response.status != 200:
+                            continue
+                        
+                        text = await response.text()
+                        if not text or "<html>" in text:
+                            continue
+                            
+                        data = json.loads(text)
+                        groups = data.get('value', {}).get('matchInfoList', [])
+                        
+                        for group in groups:
+                            b_date = group.get('businessDate')
+                            sub_list = group.get('subMatchList', [])
+                            for item in sub_list:
+                                parsed = self._parse_match(item, b_date)
+                                if parsed:
+                                    # 使用 match_code 或 matchId 作为 key 去重
+                                    m_id = parsed.get('match_code') or str(item.get('matchId'))
+                                    all_matches[m_id] = parsed
+            except Exception as e:
+                logger.error(f"抓取 Page {page} 出错: {e}")
+                
+        final_list = list(all_matches.values())
+        logger.info(f"全量抓取完成: 最终获得 {len(final_list)} 场独立赛程")
+        return final_list
 
     async def get_match_results(self) -> List[Dict]:
         """使用高级接口获取最近3天的全量比分结果 (单次100场)"""
@@ -289,6 +295,14 @@ class SportteryScraper:
             match_date = item.get('matchDate', '')
             match_time = item.get('matchTime', '')
 
+            # 提取让球数 (Handicap/GoalLine)
+            handicap = None
+            odds_list = item.get('oddsList', [])
+            for odds in odds_list:
+                if odds.get('poolCode') == 'HHAD': # 让球胜平负
+                    handicap = odds.get('goalLine')
+                    break
+
             return {
                 'match_code': match_code,
                 'group_date': business_date,
@@ -299,6 +313,7 @@ class SportteryScraper:
                 'status': status,
                 'actual_score': actual_score,
                 'half_score': item.get('halfScore', ''),
+                'handicap': handicap
             }
         except Exception as e:
             logger.error(f"解析比赛失败: {e}")

@@ -457,6 +457,7 @@ class SportteryRepository(BaseRepository):
                 'status': match.get('status', 'pending'),
                 'actual_score': match.get('actual_score'),
                 'half_score': match.get('half_score'),
+                'handicap': match.get('handicap'),
                 'updated_at': datetime.now().isoformat()
             }
             
@@ -514,7 +515,7 @@ class SportteryRepository(BaseRepository):
         if status:
             query = query.eq('status', status.lower())
         
-        response = query.order('match_time', desc=False).limit(limit).execute()
+        response = query.order('group_date', desc=True).order('match_time', desc=False).limit(limit).execute()
         matches = response.data
 
         if matches:
