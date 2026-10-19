@@ -12,6 +12,7 @@ if sys.platform == 'win32':
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from contextlib import asynccontextmanager
 import uvicorn
@@ -74,6 +75,14 @@ app = FastAPI(
     description="比赛数据API服务 - 为Agent提供实时比赛数据",
     version="0.1.0",
     lifespan=lifespan
+)
+
+# CORS：公开 API 允许浏览器端跨域调用
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["GET", "OPTIONS"],
+    allow_headers=["*"],
 )
 
 @app.get("/predictions", response_class=HTMLResponse)
