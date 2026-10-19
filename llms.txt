@@ -1,0 +1,30 @@
+# MatchStats — 实时足球数据 API（to B 服务）
+
+> 官网：https://match-stats-keithwys-projects.vercel.app/
+> GitHub：https://github.com/KEithwy1030/MatchStats
+> 商务：KEithWYong@Gmail.com ｜ Telegram：https://t.me/oldkclub
+
+## 这是什么
+
+MatchStats 是为开发者与 AI Agent 打造的实时足球数据 API 服务。
+双源聚合：Football-Data.org（欧洲主流联赛：英超、西甲、意甲、德甲、法甲、欧冠等的比分、赛程、积分榜、射手榜）
++ 中国竞彩官网（官方比赛编号、赔率、中文队名）。数据约每 20 分钟自动更新。
+
+技术栈：FastAPI + Supabase。生产环境 API 为只读策略，API Key 鉴权。
+另有 Grok 驱动的比赛深度预测情报层（/predictions）。
+
+## 合作方式（to B）
+
+1. 数据 API 授权：准实时数据接口，API Key 开通即用，适合足球分析产品、机器人、数据看板。
+2. 源码授权：直播站整站源码授权（含部署指导），按年授权，不卖断。
+3. 定制开发：新增数据源对接、私有化部署、长期技术支持。
+
+## 快速开始
+
+健康检查（公开接口，无需 Key）：
+curl https://match-stats-keithwys-projects.vercel.app/api/v1/health
+
+授权接口示例（联系商务获取 API Key 后调用）：
+curl -H "X-API-Key: YOUR_API_KEY" https://match-stats-keithwys-projects.vercel.app/api/v1/fd/matches
+
+开源核心代码遵循 Open Core 模式：核心代码开源，生产数据 API 仅对授权用户开放。

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MatchStats 足球数据 API｜实时比分·赛程·赔率数据服务</title>
+<meta name="description" content="MatchStats 为开发者与 AI Agent 提供实时足球数据 API：Football-Data.org 欧洲联赛数据 + 中国竞彩官方数据双源聚合，API Key 鉴权，约 20 分钟自动更新。数据 API 授权、直播站源码授权、定制开发，商务合作请联系。">
+<meta name="keywords" content="足球数据API,实时比分API,足球赛程数据,竞彩数据接口,football data api,live scores api,soccer api">
+<meta name="author" content="MatchStats">
+<link rel="canonical" href="https://match-stats-keithwys-projects.vercel.app/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="MatchStats 足球数据 API｜实时比分·赛程·赔率数据服务">
+<meta property="og:description" content="双源聚合的实时足球数据 API：欧洲主流联赛 + 中国竞彩官方数据。API Key 鉴权，开箱即用。">
+<meta property="og:url" content="https://match-stats-keithwys-projects.vercel.app/">
+<meta name="theme-color" content="#0b1f14">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"MatchStats 足球数据 API","applicationCategory":"DeveloperApplication","operatingSystem":"Web","description":"为开发者与 AI Agent 提供的实时足球数据 API：欧洲联赛与中国竞彩双源聚合。","offers":{"@type":"Offer","description":"数据 API 授权 / 源码授权，联系商务获取报价"},"url":"https://match-stats-keithwys-projects.vercel.app/"}
+</script>
+<style>
+:root{--bg:#0b1f14;--bg2:#0e2a1b;--card:#123522;--line:#1e4a30;--txt:#eaf5ee;--mut:#9fc3ab;--acc:#2ecc71;--acc2:#f5c518}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",Inter,sans-serif;background:var(--bg);color:var(--txt);line-height:1.7}
+a{color:var(--acc);text-decoration:none}
+.wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+/* nav */
+nav{position:sticky;top:0;z-index:50;background:rgba(11,31,20,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:62px}
+.brand{font-weight:800;font-size:20px;color:#fff}.brand span{color:var(--acc)}
+.nav-links{display:flex;gap:26px;font-size:15px}.nav-links a{color:var(--mut)}.nav-links a:hover{color:#fff}
+.btn{display:inline-block;background:var(--acc);color:#06240f;font-weight:700;padding:10px 22px;border-radius:10px;font-size:15px;transition:.2s}
+.btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(46,204,113,.35)}
+.btn.ghost{background:transparent;color:var(--txt);border:1px solid var(--line)}
+.btn.ghost:hover{border-color:var(--acc)}
+/* hero */
+.hero{padding:84px 0 60px;text-align:center;background:radial-gradient(ellipse at 50% -10%,#14532d55,transparent 60%)}
+.pill{display:inline-block;border:1px solid var(--line);color:var(--acc);font-size:13px;padding:6px 16px;border-radius:999px;margin-bottom:22px;background:#0e2a1b}
+.hero h1{font-size:clamp(32px,5.5vw,54px);line-height:1.25;font-weight:800;letter-spacing:.5px}
+.hero h1 em{font-style:normal;color:var(--acc)}
+.hero p.sub{color:var(--mut);font-size:18px;max-width:680px;margin:20px auto 34px}
+.cta-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.stats{display:flex;gap:0;justify-content:center;margin-top:56px;flex-wrap:wrap}
+.stat{padding:8px 34px;border-left:1px solid var(--line)}.stat:first-child{border:none}
+.stat b{display:block;font-size:30px;color:#fff}.stat b i{font-style:normal;color:var(--acc2);font-size:20px}
+.stat span{font-size:13px;color:var(--mut)}
+/* sections */
+section{padding:70px 0}
+h2.sec{font-size:30px;text-align:center;margin-bottom:12px}
+p.sec-sub{text-align:center;color:var(--mut);margin-bottom:44px;max-width:640px;margin-left:auto;margin-right:auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:26px}
+.card h3{font-size:18px;margin:12px 0 8px}
+.card p{color:var(--mut);font-size:14.5px}
+.card .ico{font-size:30px}
+/* demo */
+.demo{background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.code{background:#07130c;border:1px solid var(--line);border-radius:12px;padding:20px 22px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;color:#c9e8d2;overflow-x:auto;white-space:pre;margin:0 0 18px}
+.code .c{color:#6b8f78}.code .k{color:var(--acc)}
+/* pricing */
+.price-card{display:flex;flex-direction:column}
+.price-card .tag{align-self:flex-start;font-size:12px;background:#0e2a1b;border:1px solid var(--line);color:var(--acc2);border-radius:6px;padding:3px 10px;margin-bottom:12px}
+.price-card ul{list-style:none;margin:14px 0 22px;color:var(--mut);font-size:14.5px}
+.price-card li{margin:8px 0;padding-left:22px;position:relative}
+.price-card li::before{content:"✓";position:absolute;left:0;color:var(--acc)}
+.price-card .btn{margin-top:auto;text-align:center}
+/* contact */
+.contact{text-align:center;background:radial-gradient(ellipse at 50% 110%,#14532d66,transparent 60%)}
+.contact .big{font-size:22px;margin:8px 0}
+footer{border-top:1px solid var(--line);padding:30px 0;color:var(--mut);font-size:13.5px}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+@media(max-width:640px){.nav-links{display:none}.stat{padding:8px 18px}.stat b{font-size:24px}}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <div class="brand">⚽ Match<span>Stats</span></div>
+  <div class="nav-links">
+    <a href="#features">数据能力</a><a href="#demo">实时演示</a><a href="#plans">合作方式</a><a href="#contact">商务合作</a>
+    <a href="https://github.com/KEithwy1030/MatchStats" target="_blank" rel="noopener">GitHub</a>
+  </div>
+  <a class="btn" href="mailto:KEithWYong@Gmail.com?subject=MatchStats%20API%20接入咨询">获取 API 接入</a>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <div class="pill">为开发者与 AI Agent 打造 · Open Core 开源</div>
+  <h1>实时足球数据 API，<em>稳定到可以直接上线</em></h1>
+  <p class="sub">双源聚合：Football-Data.org 欧洲联赛数据 + 中国竞彩官方数据。API Key 鉴权、只读安全策略、标准 RESTful 接口——做足球分析产品、机器人、数据看板，开箱即用。</p>
+  <div class="cta-row">
+    <a class="btn" href="mailto:KEithWYong@Gmail.com?subject=MatchStats%20API%20接入咨询">申请 API 接入</a>
+    <a class="btn ghost" href="https://t.me/oldkclub" target="_blank" rel="noopener">加入 Telegram 群</a>
+    <a class="btn ghost" href="https://github.com/KEithwy1030/MatchStats" target="_blank" rel="noopener">GitHub 仓库</a>
+  </div>
+  <div class="stats">
+    <div class="stat"><b>2<i> 大</i></b><span>权威数据源聚合</span></div>
+    <div class="stat"><b>欧洲<i>主流</i></b><span>联赛全覆盖</span></div>
+    <div class="stat"><b>20<i> 分钟</i></b><span>数据自动更新</span></div>
+    <div class="stat"><b>Key<i> 鉴权</i></b><span>只读安全策略</span></div>
+  </div>
+</div></header>
+
+<section id="features"><div class="wrap">
+  <h2 class="sec">数据能力</h2>
+  <p class="sec-sub">自己爬、自己洗、自己维护数据源，费时费力还不稳定。MatchStats 把这件事做成了服务。</p>
+  <div class="grid">
+    <div class="card"><div class="ico">🌍</div><h3>欧洲联赛数据源</h3><p>Football-Data.org 聚合：英超、西甲、意甲、德甲、法甲、欧冠等比分、赛程、积分榜、射手榜。</p></div>
+    <div class="card"><div class="ico">🇨🇳</div><h3>中国竞彩官方数据</h3><p>竞彩官网直连：官方比赛编号、赔率、中文队名，做中文足球产品不用再自己翻译映射。</p></div>
+    <div class="card"><div class="ico">🤖</div><h3>AI 情报层</h3><p>Grok 驱动的比赛深度预测与情报聚合，数据之上直接给出可用结论，Agent 可直接消费。</p></div>
+    <div class="card"><div class="ico">🔒</div><h3>安全只读</h3><p>API Key 鉴权，生产环境严格只读策略，非公开接口需授权。你的 Key 只读你自己的配额。</p></div>
+  </div>
+</div></section>
+
+<section id="demo" class="demo"><div class="wrap">
+  <h2 class="sec">实时演示</h2>
+  <p class="sec-sub">不信文案，信数据。下面是真实接口的调用方式，数据看板也是实时跑的。</p>
+  <div class="code"><span class="c"># 健康检查（公开接口，无需 Key）</span>
+curl https://match-stats-keithwys-projects.vercel.app/api/v1/health
+
+<span class="c"># 授权接口示例（联系商务获取 API Key）</span>
+curl -H <span class="k">"X-API-Key: YOUR_API_KEY"</span> \
+  https://match-stats-keithwys-projects.vercel.app/api/v1/fd/matches</div>
+  <div class="cta-row">
+    <a class="btn" href="/app/static/index.html">打开实时数据看板 →</a>
+    <a class="btn ghost" href="https://github.com/KEithwy1030/MatchStats" target="_blank" rel="noopener">查看开源核心代码</a>
+  </div>
+</div></section>
+
+<section id="plans"><div class="wrap">
+  <h2 class="sec">合作方式</h2>
+  <p class="sec-sub">三种方式，按需选择。价格不公开标价——联系商务，按你的用量谈。</p>
+  <div class="grid">
+    <div class="card price-card"><span class="tag">最受欢迎</span><h3>数据 API 授权</h3><p>准实时足球数据接口接入，API Key 开通即用。</p>
+      <ul><li>欧洲联赛 + 竞彩双源数据</li><li>标准 RESTful，文档齐全</li><li>适合分析产品 / 机器人 / 看板</li></ul>
+      <a class="btn" href="mailto:KEithWYong@Gmail.com?subject=MatchStats%20数据API授权咨询">咨询接入</a></div>
+    <div class="card price-card"><span class="tag">整站交付</span><h3>源码授权</h3><p>直播站整站源码授权，含部署指导。</p>
+      <ul><li>前后端完整源码</li><li>部署指导与文档</li><li>按年授权，不卖断</li></ul>
+      <a class="btn" href="mailto:KEithWYong@Gmail.com?subject=MatchStats%20源码授权咨询">咨询授权</a></div>
+    <div class="card price-card"><span class="tag">按需定制</span><h3>定制开发</h3><p>数据源对接、私有化部署、专项需求。</p>
+      <ul><li>新增数据源对接</li><li>私有化部署方案</li><li>长期技术支持</li></ul>
+      <a class="btn" href="mailto:KEithWYong@Gmail.com?subject=MatchStats%20定制开发咨询">联系详谈</a></div>
+  </div>
+</div></section>
+
+<section id="contact" class="contact"><div class="wrap">
+  <h2 class="sec">商务合作</h2>
+  <p class="sec-sub">所有合作（API 授权 / 源码授权 / 定制）都走下面两个入口，看到即回。</p>
+  <p class="big">📧 <a href="mailto:KEithWYong@Gmail.com">KEithWYong@Gmail.com</a></p>
+  <p class="big">✈️ <a href="https://t.me/oldkclub" target="_blank" rel="noopener">t.me/oldkclub</a>（Telegram 群，私聊群主）</p>
+</div></section>
+
+<footer><div class="wrap">
+  <span>© 2026 MatchStats · 实时足球数据服务</span>
+  <span><a href="https://github.com/KEithwy1030/MatchStats" target="_blank" rel="noopener">GitHub</a> · <a href="https://t.me/oldkclub" target="_blank" rel="noopener">Telegram</a> · <a href="/llms.txt">llms.txt</a></span>
+</div></footer>
+
+</body>
+</html>
