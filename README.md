@@ -65,6 +65,10 @@ MatchStats 遵循 **“Open Core”** 模式：核心代码完全开源；生产
 
 📧 **商务联络**: [KEithWYong@Gmail.com](mailto:KEithWYong@Gmail.com)
 
+## 💼 源码授权 (Source Licensing)
+
+直播站整站源码授权（含部署指导）、数据 API 商业接入：📧 [KEithWYong@Gmail.com](mailto:KEithWYong@Gmail.com)，或 TG 群 [t.me/oldkclub](https://t.me/oldkclub) 私聊群主。
+
 ---
 
 ## ❤️ Support the Developer
