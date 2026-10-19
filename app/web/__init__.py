@@ -44,7 +44,7 @@ async def llms_txt():
 INDEXNOW_KEY = "94246dff1321fea96c35b61737f2aa7e"
 
 
-@web_router.get("/" + INDEXNOW_KEY + ".txt")
+@web_router.get("/indexnow.txt")
 async def indexnow_key():
     """IndexNow 站点验证文件"""
     return PlainResponse(INDEXNOW_KEY)
