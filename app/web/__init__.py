@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from fastapi.responses import HTMLResponse, FileResponse, PlainResponse
+from fastapi.responses import HTMLResponse, FileResponse
 from datetime import datetime
 import os
 
@@ -40,14 +40,6 @@ async def sitemap_xml():
 async def llms_txt():
     return FileResponse("llms.txt", media_type="text/plain; charset=utf-8")
 
-
-INDEXNOW_KEY = "94246dff1321fea96c35b61737f2aa7e"
-
-
-@web_router.get("/indexnow.txt")
-async def indexnow_key():
-    """IndexNow 站点验证文件"""
-    return PlainResponse(INDEXNOW_KEY)
 
 # Preserve old routes just in case, or we can deprecate them.
 
