@@ -15,9 +15,30 @@ log_repo = LogRepository()
 # ... (Existing Dicts can stay) ...
 
 @web_router.get("/")
-async def index():
-    """新版 Dashboard"""
+async def landing():
+    """to B 落地页"""
+    return FileResponse(os.path.join("app", "static", "landing.html"))
+
+
+@web_router.get("/dashboard")
+async def dashboard():
+    """实时数据看板（原 Dashboard）"""
     return FileResponse(os.path.join("app", "static", "index.html"))
+
+
+@web_router.get("/robots.txt")
+async def robots_txt():
+    return FileResponse("robots.txt", media_type="text/plain")
+
+
+@web_router.get("/sitemap.xml")
+async def sitemap_xml():
+    return FileResponse("sitemap.xml", media_type="application/xml")
+
+
+@web_router.get("/llms.txt")
+async def llms_txt():
+    return FileResponse("llms.txt", media_type="text/plain; charset=utf-8")
 
 # Preserve old routes just in case, or we can deprecate them.
 
