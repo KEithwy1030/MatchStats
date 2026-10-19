@@ -12,144 +12,204 @@
 <meta property="og:title" content="MatchStats 足球数据 API｜实时比分·赛程·赔率数据服务">
 <meta property="og:description" content="双源聚合的实时足球数据 API：欧洲主流联赛 + 中国竞彩官方数据。API Key 鉴权，开箱即用。">
 <meta property="og:url" content="https://match-stats-keithwys-projects.vercel.app/">
-<meta name="theme-color" content="#0b1f14">
+<meta name="theme-color" content="#0a1f16">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira:wght@400;500;600;700;800&family=Saira+Condensed:wght@600;700&family=PingFang+SC:wght@400;500;700&display=swap" rel="stylesheet">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"SoftwareApplication","name":"MatchStats 足球数据 API","applicationCategory":"DeveloperApplication","operatingSystem":"Web","description":"为开发者与 AI Agent 提供的实时足球数据 API：欧洲联赛与中国竞彩双源聚合。","offers":{"@type":"Offer","description":"数据 API 授权 / 源码授权，联系商务获取报价"},"url":"https://match-stats-keithwys-projects.vercel.app/"}
 </script>
 <style>
-:root{--bg:#0b1f14;--bg2:#0e2a1b;--card:#123522;--line:#1e4a30;--txt:#eaf5ee;--mut:#9fc3ab;--acc:#2ecc71;--acc2:#f5c518}
+/* 对齐 ogk88.com 设计系统：theme.css 口径 */
+:root{
+  --paper:#f5f4ef; --paper-soft:#fbfaf6; --paper-strong:#eceae1;
+  --ink:#16201b; --ink-soft:#38423c; --muted:#6b756e;
+  --pine:#0f5c40; --pine-deep:#0a4530;
+  --green-band:#102f23; --green-dark:#0a1f16; --green-deep:#071d15;
+  --gold:#b5863a; --gold-soft:#ebd9ae;
+  --line-light:rgba(255,255,255,.14);
+  --font-main:"Saira","PingFang SC","Microsoft YaHei","Noto Sans CJK SC",system-ui,sans-serif;
+  --font-disp:"Saira Condensed","PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+  --radius-sm:0; --radius-md:0; --radius-lg:0; --radius-xl:0;
+}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",Inter,sans-serif;background:var(--bg);color:var(--txt);line-height:1.7}
-a{color:var(--acc);text-decoration:none}
-.wrap{max-width:1080px;margin:0 auto;padding:0 22px}
-/* nav */
-nav{position:sticky;top:0;z-index:50;background:rgba(11,31,20,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
-nav .wrap{display:flex;align-items:center;justify-content:space-between;height:62px}
-.brand{font-weight:800;font-size:20px;color:#fff}.brand span{color:var(--acc)}
-.nav-links{display:flex;gap:26px;font-size:15px}.nav-links a{color:var(--mut)}.nav-links a:hover{color:#fff}
-.btn{display:inline-block;background:var(--acc);color:#06240f;font-weight:700;padding:10px 22px;border-radius:10px;font-size:15px;transition:.2s}
-.btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(46,204,113,.35)}
-.btn.ghost{background:transparent;color:var(--txt);border:1px solid var(--line)}
-.btn.ghost:hover{border-color:var(--acc)}
-/* hero */
-.hero{padding:84px 0 60px;text-align:center;background:radial-gradient(ellipse at 50% -10%,#14532d55,transparent 60%)}
-.pill{display:inline-block;border:1px solid var(--line);color:var(--acc);font-size:13px;padding:6px 16px;border-radius:999px;margin-bottom:22px;background:#0e2a1b}
-.hero h1{font-size:clamp(32px,5.5vw,54px);line-height:1.25;font-weight:800;letter-spacing:.5px}
-.hero h1 em{font-style:normal;color:var(--acc)}
-.hero p.sub{color:var(--mut);font-size:18px;max-width:680px;margin:20px auto 34px}
-.cta-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
-.stats{display:flex;gap:0;justify-content:center;margin-top:56px;flex-wrap:wrap}
-.stat{padding:8px 34px;border-left:1px solid var(--line)}.stat:first-child{border:none}
-.stat b{display:block;font-size:30px;color:#fff}.stat b i{font-style:normal;color:var(--acc2);font-size:20px}
-.stat span{font-size:13px;color:var(--mut)}
-/* sections */
-section{padding:70px 0}
-h2.sec{font-size:30px;text-align:center;margin-bottom:12px}
-p.sec-sub{text-align:center;color:var(--mut);margin-bottom:44px;max-width:640px;margin-left:auto;margin-right:auto}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:26px}
-.card h3{font-size:18px;margin:12px 0 8px}
-.card p{color:var(--mut);font-size:14.5px}
-.card .ico{font-size:30px}
-/* demo */
-.demo{background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.code{background:#07130c;border:1px solid var(--line);border-radius:12px;padding:20px 22px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;color:#c9e8d2;overflow-x:auto;white-space:pre;margin:0 0 18px}
-.code .c{color:#6b8f78}.code .k{color:var(--acc)}
-/* pricing */
-.price-card{display:flex;flex-direction:column}
-.price-card .tag{align-self:flex-start;font-size:12px;background:#0e2a1b;border:1px solid var(--line);color:var(--acc2);border-radius:6px;padding:3px 10px;margin-bottom:12px}
-.price-card ul{list-style:none;margin:14px 0 22px;color:var(--mut);font-size:14.5px}
-.price-card li{margin:8px 0;padding-left:22px;position:relative}
-.price-card li::before{content:"✓";position:absolute;left:0;color:var(--acc)}
-.price-card .btn{margin-top:auto;text-align:center}
-/* contact */
-.contact{text-align:center;background:radial-gradient(ellipse at 50% 110%,#14532d66,transparent 60%)}
-.contact .big{font-size:22px;margin:8px 0}
-footer{border-top:1px solid var(--line);padding:30px 0;color:var(--mut);font-size:13.5px}
-footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
-@media(max-width:640px){.nav-links{display:none}.stat{padding:8px 18px}.stat b{font-size:24px}}
+html{background:var(--paper)}
+body{font-family:var(--font-main);background:var(--paper);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+/* 全宽色带：模块硬拼接 */
+.band{width:100%}
+.inner{max-width:1180px;margin:0 auto;padding:0 28px}
+/* 顶栏 */
+.nav{background:var(--green-dark);color:#fff}
+.nav .inner{display:flex;align-items:center;justify-content:space-between;height:64px}
+.brand{font-family:var(--font-disp);font-weight:700;font-size:24px;letter-spacing:1px}
+.brand em{font-style:normal;color:var(--gold)}
+.nav-links{display:flex;gap:30px;font-size:15px;color:#cfe0d4}
+.nav-links a:hover{color:#fff}
+/* 按钮：直角实心色块，无边框无圆角 */
+.btn{display:inline-block;font-weight:700;font-size:15px;padding:13px 30px;border-radius:0;border:0;cursor:pointer;transition:opacity .18s ease}
+.btn:hover{opacity:.88}
+.btn-gold{background:var(--gold);color:#1c1408}
+.btn-pine{background:var(--pine);color:#fff}
+.btn-paper{background:var(--paper-strong);color:var(--ink)}
+/* Hero：奶油带 */
+.hero{background:var(--paper);padding:96px 0 0}
+.eyebrow{display:inline-block;font-size:13px;font-weight:700;letter-spacing:3px;color:var(--gold);margin-bottom:20px}
+.hero h1{font-family:var(--font-disp);font-size:clamp(40px,6vw,68px);line-height:1.15;letter-spacing:1px;color:var(--ink);max-width:900px}
+.hero h1 .hl{color:var(--pine)}
+.hero .sub{font-size:18px;color:var(--ink-soft);max-width:720px;margin:24px 0 36px}
+.cta-row{display:flex;gap:16px;flex-wrap:wrap}
+/* 数据条：奶油带内，金色数字 */
+.stats{background:var(--paper);padding:64px 0 72px}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+.stat{padding:6px 32px 6px 0}
+.stat + .stat{padding-left:32px}
+.stat b{display:block;font-family:var(--font-disp);font-size:44px;color:var(--gold);letter-spacing:1px;line-height:1.1}
+.stat b small{font-size:20px}
+.stat span{font-size:14px;color:var(--muted)}
+/* 数据能力：墨绿带 */
+.features{background:var(--green-band);color:#fff;padding:80px 0}
+.sec-title{font-family:var(--font-disp);font-size:36px;letter-spacing:2px;margin-bottom:10px}
+.sec-sub{font-size:16px;opacity:.72;max-width:640px;margin-bottom:48px}
+.features .sec-sub{color:#cfe0d4}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+.tile{background:var(--green-dark);padding:34px 28px}
+.tile + .tile{margin-left:2px}
+.tile .no{font-family:var(--font-disp);font-size:15px;color:var(--gold);letter-spacing:2px}
+.tile h3{font-size:19px;margin:14px 0 10px;letter-spacing:1px}
+.tile p{font-size:14.5px;color:#b9cdc0;line-height:1.7}
+/* 实时演示：奶油带 */
+.demo{background:var(--paper);padding:80px 0}
+.demo .sec-sub{color:var(--ink-soft)}
+.code{background:var(--green-dark);color:#d7e8dc;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;line-height:1.8;padding:28px 30px;white-space:pre;overflow-x:auto;margin-bottom:28px}
+.code .c{color:#7ba389}.code .k{color:var(--gold-soft)}
+/* 合作方式：深绿带 */
+.plans{background:var(--green-dark);color:#fff;padding:80px 0}
+.plans .sec-sub{color:#cfe0d4}
+.plan-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+.plan{background:var(--green-band);padding:40px 34px;display:flex;flex-direction:column}
+.plan + .plan{margin-left:2px}
+.plan .tag{align-self:flex-start;font-size:12px;font-weight:700;letter-spacing:2px;color:var(--gold);margin-bottom:16px}
+.plan h3{font-family:var(--font-disp);font-size:26px;letter-spacing:1px;margin-bottom:10px}
+.plan p{font-size:14.5px;color:#b9cdc0;margin-bottom:20px}
+.plan ul{list-style:none;margin-bottom:30px}
+.plan li{font-size:14.5px;color:#d7e8dc;padding:7px 0 7px 24px;position:relative}
+.plan li::before{content:"✓";position:absolute;left:0;color:var(--gold);font-weight:700}
+.plan .btn{margin-top:auto;text-align:center}
+/* 商务合作：奶油带 */
+.contact{background:var(--paper);padding:80px 0;text-align:left}
+.contact .sec-sub{color:var(--ink-soft)}
+.contact-lines{margin-top:8px}
+.contact-lines .row{display:flex;align-items:baseline;gap:18px;padding:18px 0}
+.contact-lines .label{font-size:14px;color:var(--muted);width:90px;flex-shrink:0;letter-spacing:2px}
+.contact-lines .value{font-size:22px;font-weight:700;color:var(--ink)}
+.contact-lines .value a:hover{color:var(--pine)}
+/* 页脚：深绿 */
+footer{background:var(--green-deep);color:#8fa898;font-size:13.5px}
+footer .inner{display:flex;justify-content:space-between;align-items:center;padding-top:26px;padding-bottom:26px;flex-wrap:wrap;gap:10px}
+footer a:hover{color:#fff}
+@media(max-width:900px){
+  .tiles,.plan-tiles{grid-template-columns:1fr}
+  .tile + .tile,.plan + .plan{margin-left:0;margin-top:2px}
+  .stats-grid{grid-template-columns:repeat(2,1fr);gap:28px 0}
+  .stat + .stat{padding-left:0}
+  .nav-links{display:none}
+}
 </style>
 </head>
 <body>
 
-<nav><div class="wrap">
-  <div class="brand">⚽ Match<span>Stats</span></div>
+<!-- 顶栏 -->
+<div class="band nav"><div class="inner">
+  <div class="brand">⚽ Match<em>Stats</em></div>
   <div class="nav-links">
     <a href="#features">数据能力</a><a href="#demo">实时演示</a><a href="#plans">合作方式</a><a href="#contact">商务合作</a>
     <a href="https://github.com/KEithwy1030/MatchStats" target="_blank" rel="noopener">GitHub</a>
   </div>
-  <a class="btn" href="mailto:KEithWYong@Gmail.com?subject=MatchStats%20API%20接入咨询">获取 API 接入</a>
-</div></nav>
+  <a class="btn btn-gold" href="mailto:KEithWYong@Gmail.com?subject=MatchStats%20API%20接入咨询">获取 API 接入</a>
+</div></div>
 
-<header class="hero"><div class="wrap">
-  <div class="pill">为开发者与 AI Agent 打造 · Open Core 开源</div>
-  <h1>实时足球数据 API，<em>稳定到可以直接上线</em></h1>
+<!-- Hero -->
+<div class="band hero"><div class="inner">
+  <span class="eyebrow">为开发者与 AI AGENT 打造 · OPEN CORE 开源</span>
+  <h1>实时足球数据 API，<span class="hl">稳定到可以直接上线</span></h1>
   <p class="sub">双源聚合：Football-Data.org 欧洲联赛数据 + 中国竞彩官方数据。API Key 鉴权、只读安全策略、标准 RESTful 接口——做足球分析产品、机器人、数据看板，开箱即用。</p>
   <div class="cta-row">
-    <a class="btn" href="mailto:KEithWYong@Gmail.com?subject=MatchStats%20API%20接入咨询">申请 API 接入</a>
-    <a class="btn ghost" href="https://t.me/oldkclub" target="_blank" rel="noopener">加入 Telegram 群</a>
-    <a class="btn ghost" href="https://github.com/KEithwy1030/MatchStats" target="_blank" rel="noopener">GitHub 仓库</a>
+    <a class="btn btn-pine" href="mailto:KEithWYong@Gmail.com?subject=MatchStats%20API%20接入咨询">申请 API 接入</a>
+    <a class="btn btn-paper" href="https://t.me/oldkclub" target="_blank" rel="noopener">加入 Telegram 群</a>
+    <a class="btn btn-paper" href="https://github.com/KEithwy1030/MatchStats" target="_blank" rel="noopener">GitHub 仓库</a>
   </div>
-  <div class="stats">
-    <div class="stat"><b>2<i> 大</i></b><span>权威数据源聚合</span></div>
-    <div class="stat"><b>欧洲<i>主流</i></b><span>联赛全覆盖</span></div>
-    <div class="stat"><b>20<i> 分钟</i></b><span>数据自动更新</span></div>
-    <div class="stat"><b>Key<i> 鉴权</i></b><span>只读安全策略</span></div>
-  </div>
-</div></header>
+</div></div>
 
-<section id="features"><div class="wrap">
-  <h2 class="sec">数据能力</h2>
+<!-- 数据条 -->
+<div class="band stats"><div class="inner">
+  <div class="stats-grid">
+    <div class="stat"><b>2 <small>大</small></b><span>权威数据源聚合</span></div>
+    <div class="stat"><b>6 <small>大联赛</small></b><span>欧洲主流全覆盖</span></div>
+    <div class="stat"><b>20 <small>分钟</small></b><span>数据自动更新</span></div>
+    <div class="stat"><b>Key <small>鉴权</small></b><span>只读安全策略</span></div>
+  </div>
+</div></div>
+
+<!-- 数据能力 -->
+<div class="band features" id="features"><div class="inner">
+  <div class="sec-title">数据能力</div>
   <p class="sec-sub">自己爬、自己洗、自己维护数据源，费时费力还不稳定。MatchStats 把这件事做成了服务。</p>
-  <div class="grid">
-    <div class="card"><div class="ico">🌍</div><h3>欧洲联赛数据源</h3><p>Football-Data.org 聚合：英超、西甲、意甲、德甲、法甲、欧冠等比分、赛程、积分榜、射手榜。</p></div>
-    <div class="card"><div class="ico">🇨🇳</div><h3>中国竞彩官方数据</h3><p>竞彩官网直连：官方比赛编号、赔率、中文队名，做中文足球产品不用再自己翻译映射。</p></div>
-    <div class="card"><div class="ico">🤖</div><h3>AI 情报层</h3><p>Grok 驱动的比赛深度预测与情报聚合，数据之上直接给出可用结论，Agent 可直接消费。</p></div>
-    <div class="card"><div class="ico">🔒</div><h3>安全只读</h3><p>API Key 鉴权，生产环境严格只读策略，非公开接口需授权。你的 Key 只读你自己的配额。</p></div>
+  <div class="tiles">
+    <div class="tile"><div class="no">01</div><h3>欧洲联赛数据源</h3><p>Football-Data.org 聚合：英超、西甲、意甲、德甲、法甲、欧冠等比分、赛程、积分榜、射手榜。</p></div>
+    <div class="tile"><div class="no">02</div><h3>中国竞彩官方数据</h3><p>竞彩官网直连：官方比赛编号、赔率、中文队名，做中文足球产品不用再自己翻译映射。</p></div>
+    <div class="tile"><div class="no">03</div><h3>AI 情报层</h3><p>Grok 驱动的比赛深度预测与情报聚合，数据之上直接给出可用结论，Agent 可直接消费。</p></div>
+    <div class="tile"><div class="no">04</div><h3>安全只读</h3><p>API Key 鉴权，生产环境严格只读策略，非公开接口需授权。你的 Key 只读你自己的配额。</p></div>
   </div>
-</div></section>
+</div></div>
 
-<section id="demo" class="demo"><div class="wrap">
-  <h2 class="sec">实时演示</h2>
+<!-- 实时演示 -->
+<div class="band demo" id="demo"><div class="inner">
+  <div class="sec-title">实时演示</div>
   <p class="sec-sub">不信文案，信数据。下面是真实接口的调用方式，数据看板也是实时跑的。</p>
   <div class="code"><span class="c"># 健康检查（公开接口，无需 Key）</span>
 curl https://match-stats-keithwys-projects.vercel.app/api/v1/health
 
-<span class="c"># 授权接口示例（联系商务获取 API Key）</span>
+<span class="c"># 联赛列表（需 API Key，联系商务获取）</span>
 curl -H <span class="k">"X-API-Key: YOUR_API_KEY"</span> \
-  https://match-stats-keithwys-projects.vercel.app/api/v1/fd/matches</div>
+  https://match-stats-keithwys-projects.vercel.app/api/v1/fd/leagues</div>
   <div class="cta-row">
-    <a class="btn" href="/dashboard">打开实时数据看板 →</a>
-    <a class="btn ghost" href="https://github.com/KEithwy1030/MatchStats" target="_blank" rel="noopener">查看开源核心代码</a>
+    <a class="btn btn-pine" href="/dashboard">打开实时数据看板 →</a>
+    <a class="btn btn-paper" href="https://github.com/KEithwy1030/MatchStats" target="_blank" rel="noopener">查看开源核心代码</a>
   </div>
-</div></section>
+</div></div>
 
-<section id="plans"><div class="wrap">
-  <h2 class="sec">合作方式</h2>
+<!-- 合作方式 -->
+<div class="band plans" id="plans"><div class="inner">
+  <div class="sec-title">合作方式</div>
   <p class="sec-sub">三种方式，按需选择。价格不公开标价——联系商务，按你的用量谈。</p>
-  <div class="grid">
-    <div class="card price-card"><span class="tag">最受欢迎</span><h3>数据 API 授权</h3><p>准实时足球数据接口接入，API Key 开通即用。</p>
+  <div class="plan-tiles">
+    <div class="plan"><span class="tag">最受欢迎</span><h3>数据 API 授权</h3><p>准实时足球数据接口接入，API Key 开通即用。</p>
       <ul><li>欧洲联赛 + 竞彩双源数据</li><li>标准 RESTful，文档齐全</li><li>适合分析产品 / 机器人 / 看板</li></ul>
-      <a class="btn" href="mailto:KEithWYong@Gmail.com?subject=MatchStats%20数据API授权咨询">咨询接入</a></div>
-    <div class="card price-card"><span class="tag">整站交付</span><h3>源码授权</h3><p>直播站整站源码授权，含部署指导。</p>
+      <a class="btn btn-gold" href="mailto:KEithWYong@Gmail.com?subject=MatchStats%20数据API授权咨询">咨询接入</a></div>
+    <div class="plan"><span class="tag">整站交付</span><h3>源码授权</h3><p>直播站整站源码授权，含部署指导。</p>
       <ul><li>前后端完整源码</li><li>部署指导与文档</li><li>按年授权，不卖断</li></ul>
-      <a class="btn" href="mailto:KEithWYong@Gmail.com?subject=MatchStats%20源码授权咨询">咨询授权</a></div>
-    <div class="card price-card"><span class="tag">按需定制</span><h3>定制开发</h3><p>数据源对接、私有化部署、专项需求。</p>
+      <a class="btn btn-gold" href="mailto:KEithWYong@Gmail.com?subject=MatchStats%20源码授权咨询">咨询授权</a></div>
+    <div class="plan"><span class="tag">按需定制</span><h3>定制开发</h3><p>数据源对接、私有化部署、专项需求。</p>
       <ul><li>新增数据源对接</li><li>私有化部署方案</li><li>长期技术支持</li></ul>
-      <a class="btn" href="mailto:KEithWYong@Gmail.com?subject=MatchStats%20定制开发咨询">联系详谈</a></div>
+      <a class="btn btn-gold" href="mailto:KEithWYong@Gmail.com?subject=MatchStats%20定制开发咨询">联系详谈</a></div>
   </div>
-</div></section>
+</div></div>
 
-<section id="contact" class="contact"><div class="wrap">
-  <h2 class="sec">商务合作</h2>
+<!-- 商务合作 -->
+<div class="band contact" id="contact"><div class="inner">
+  <div class="sec-title">商务合作</div>
   <p class="sec-sub">所有合作（API 授权 / 源码授权 / 定制）都走下面两个入口，看到即回。</p>
-  <p class="big">📧 <a href="mailto:KEithWYong@Gmail.com">KEithWYong@Gmail.com</a></p>
-  <p class="big">✈️ <a href="https://t.me/oldkclub" target="_blank" rel="noopener">t.me/oldkclub</a>（Telegram 群，私聊群主）</p>
-</div></section>
+  <div class="contact-lines">
+    <div class="row"><span class="label">商务邮箱</span><span class="value"><a href="mailto:KEithWYong@Gmail.com">KEithWYong@Gmail.com</a></span></div>
+    <div class="row"><span class="label">TELEGRAM</span><span class="value"><a href="https://t.me/oldkclub" target="_blank" rel="noopener">t.me/oldkclub</a></span></div>
+  </div>
+</div></div>
 
-<footer><div class="wrap">
+<!-- 页脚 -->
+<footer class="band"><div class="inner">
   <span>© 2026 MatchStats · 实时足球数据服务</span>
-  <span><a href="https://github.com/KEithwy1030/MatchStats" target="_blank" rel="noopener">GitHub</a> · <a href="https://t.me/oldkclub" target="_blank" rel="noopener">Telegram</a> · <a href="/llms.txt">llms.txt</a></span>
+  <span><a href="https://github.com/KEithwy1030/MatchStats" target="_blank" rel="noopener">GitHub</a>　<a href="https://t.me/oldkclub" target="_blank" rel="noopener">Telegram</a>　<a href="/llms.txt">llms.txt</a></span>
 </div></footer>
 
 </body>
