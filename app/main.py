@@ -138,25 +138,36 @@ async def api_key_middleware(request: Request, call_next):
     api_key = request.headers.get("X-API-KEY")
     referer = request.headers.get("referer", "")
     origin = request.headers.get("origin", "")
+    host = request.headers.get("host", "")
     
     # 识别是否为“官方/可信”来源 (本地或您的域名)
-    is_trusted_source = any(host in (referer + origin) for host in [".vercel.app", "localhost", "127.0.0.1", "match-stats"])
+    is_trusted_source = any(domain in (referer + origin + host) for domain in [".vercel.app", "localhost", "127.0.0.1", "match-stats"])
     is_admin = (api_key == settings.INTERNAL_API_KEY)
 
     # 3. 指定 API 访问控制 (确保数据不被外部轻松刷取)
-    # 仅允许以下路径被调用
-    allowed_api_paths = ["/api/v1/fd/", "/api/v1/sporttery/", "/api/v1/health", "/api/system/status"]
+    # 允许以下公开/看板路径被调用
+    allowed_api_paths = [
+        "/api/v1/fd/",
+        "/api/v1/sporttery/",
+        "/api/v1/health",
+        "/api/system/status",
+        "/api/v1/stats",
+        "/api/v1/logs",
+        "/api/v1/refresh",
+        "/api/v1/sync",
+        "/api/v1/debug"
+    ]
     
     # 权限校验
     is_path_allowed = any(request.url.path.startswith(p) for p in allowed_api_paths)
     
     if not is_path_allowed:
-        # 非公开路径（如 /api/v1/logs, /api/v1/stats）必须是管理员或信任来源
+        # 非公开路径必须是管理员或信任来源
         if not is_admin and not is_trusted_source:
             from fastapi.responses import JSONResponse
             return JSONResponse(status_code=401, content={"detail": "Unauthorized: 访问受限。"})
 
-    # 4. 针对足球数据的防盗刷 (如果您不希望别人轻松拿走数据)
+    # 4. 针对足球数据的防盗刷
     if request.url.path.startswith("/api/v1/fd/"):
         if not is_trusted_source and not is_admin:
             from fastapi.responses import JSONResponse

@@ -181,15 +181,23 @@ const app = createApp({
             }
         };
 
-        const refreshAll = () => {
-            fetchStats();
-            fetchMatches();
-            fetchLogs();
-
-            if (activeSource.value === 'fd') {
-                fetchStandings();
-                fetchScorers();
+        const refreshAll = async () => {
+            loading.value = true;
+            try {
+                // 真正触发数据同步
+                await axios.get('/api/v1/refresh');
+            } catch (e) {
+                console.warn("Refresh sync warning:", e);
             }
+
+            await Promise.allSettled([
+                fetchStats(),
+                fetchMatches(),
+                fetchLogs(),
+                activeSource.value === 'fd' ? fetchStandings() : Promise.resolve(),
+                activeSource.value === 'fd' ? fetchScorers() : Promise.resolve()
+            ]);
+            loading.value = false;
         };
 
         // Watchers

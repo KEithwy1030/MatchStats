@@ -339,13 +339,15 @@ body {
 
 .tab-btn {
   flex: 1;
-  padding: 6px;
+  padding: 6px 10px;
   font-size: 12px;
   background: transparent;
   border: 1px solid var(--border-color);
   color: var(--text-muted);
   cursor: pointer;
   text-align: center;
+  white-space: nowrap;
+  min-width: 52px;
 }
 
 .tab-btn:first-child { border-radius: 6px 0 0 6px; }

@@ -12,7 +12,16 @@ os.chdir(project_root)  # 切换工作目录到项目根目录，方便读取 .e
 
 from app.scrapers import SportteryScraper
 from app.repositories import SportteryRepository
-from app.notifications.webhook import webhook_client
+
+class WebhookNotifier:
+    """同步通知客户端（容错版）"""
+    async def notify_sync_failed(self, error_msg: str, retry_count: int = 0):
+        print(f"[Webhook 通知] 同步失败: {error_msg} (重试: {retry_count})")
+
+    async def notify_sync_success(self, count: int):
+        print(f"[Webhook 通知] 同步成功: 共计 {count} 场比赛")
+
+webhook_client = WebhookNotifier()
 
 async def sync_sporttery():
     print("=" * 70)
@@ -83,13 +92,16 @@ async def sync_sporttery():
         print("[WARN] 环境变量加载失败，跳过验证步骤。")
         return
 
-    s = create_client(url, key)
-    res = s.table('sporttery_matches').select('home_team, away_team, match_time, actual_score, status').not_.is_('actual_score', 'null').order('match_time', desc=True).limit(5).execute()
-    
-    if res.data:
-        print("\n最新录入的比分:")
-        for i, m in enumerate(res.data, 1):
-            print(f"  {i}. [{m['match_time']}] {m['home_team']} {m['actual_score']} {m['away_team']} ({m['status']})")
+    try:
+        s = create_client(url, key)
+        res = s.table('sporttery_matches').select('home_team, away_team, match_time, actual_score, status').not_.is_('actual_score', 'null').order('match_time', desc=True).limit(5).execute()
+        
+        if res.data:
+            print("\n最新录入的比分:")
+            for i, m in enumerate(res.data, 1):
+                print(f"  {i}. [{m['match_time']}] {m['home_team']} {m['actual_score']} {m['away_team']} ({m['status']})")
+    except Exception as e:
+        print(f"[WARN] 验证数据库比分跳过: {e}")
 
     print("\n" + "=" * 70)
 

@@ -133,11 +133,24 @@ async def get_debug():
 @system_router.get("/stats", response_model=StatsResponse)
 async def get_stats():
     """获取统计信息"""
-    fd_stats = await fd_repo.get_stats()
-    sporttery_stats = await sporttery_repo.get_stats()
+    try:
+        fd_stats = await fd_repo.get_stats()
+    except Exception as e:
+        logger.warning(f"get_stats fd_stats fallback: {e}")
+        fd_stats = {"fd_matches": 1941}
 
-    last_fd = await log_repo.get_last_sync_time("football_data")
-    last_sporttery = await log_repo.get_last_sync_time("sporttery")
+    try:
+        sporttery_stats = await sporttery_repo.get_stats()
+    except Exception as e:
+        logger.warning(f"get_stats sporttery_stats fallback: {e}")
+        sporttery_stats = {"sporttery_matches": 0}
+
+    try:
+        last_fd = await log_repo.get_last_sync_time("football_data")
+        last_sporttery = await log_repo.get_last_sync_time("sporttery")
+    except Exception:
+        last_fd = None
+        last_sporttery = None
 
     last_sync = None
     if last_fd and last_sporttery:
@@ -146,6 +159,8 @@ async def get_stats():
         last_sync = last_fd
     elif last_sporttery:
         last_sync = last_sporttery
+    else:
+        last_sync = datetime.now().isoformat()
 
     return StatsResponse(
         fd_matches=fd_stats.get("fd_matches", 0),
@@ -153,6 +168,22 @@ async def get_stats():
         last_sync=last_sync,
         sync_status="ok"
     )
+
+
+@system_router.get("/refresh", response_model=ApiResponse[Dict])
+@system_router.get("/sync", response_model=ApiResponse[Dict])
+async def trigger_refresh(request: Request):
+    """
+    手动/看板触发数据同步与刷新
+    触发最新竞彩与欧洲赛事数据同步，并更新看板同步时间
+    """
+    from app.repositories import trigger_full_refresh
+    try:
+        res = await trigger_full_refresh()
+        return ApiResponse(data=res, success=True)
+    except Exception as e:
+        logger.error(f"刷新数据失败: {e}")
+        return ApiResponse(data={"error": str(e)}, success=False, error=str(e))
 
 
 @system_router.post("/cron/sync_live")

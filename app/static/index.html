@@ -93,7 +93,7 @@
                         <div class="stat-sub">当前视图场次</div>
                     </div>
                     <div class="stat-card card">
-                        <div class="stat-value" style="color:var(--accent);">活跃</div>
+                        <div class="stat-value" :style="{ color: stats.sync_status === 'error' ? 'var(--danger)' : 'var(--accent)' }">{{ stats.sync_status === 'error' ? '异常' : '活跃' }}</div>
                         <div class="stat-sub">数据库状态</div>
                     </div>
                 </div>
