@@ -139,9 +139,15 @@ async def api_key_middleware(request: Request, call_next):
     referer = request.headers.get("referer", "")
     origin = request.headers.get("origin", "")
     host = request.headers.get("host", "")
+    sec_fetch_site = request.headers.get("sec-fetch-site", "")
     
-    # 识别是否为“官方/可信”来源 (本地或您的域名)
-    is_trusted_source = any(domain in (referer + origin + host) for domain in [".vercel.app", "localhost", "127.0.0.1", "match-stats"])
+    # 识别是否为“官方/可信”来源 (本地或相关域名/同源调用)
+    trusted_domains = [".vercel.app", "localhost", "127.0.0.1", "match-stats", "kmatch-stats", "ogk88"]
+    is_trusted_source = (
+        any(domain in (referer + origin + host) for domain in trusted_domains) or
+        sec_fetch_site in ["same-origin", "same-site"] or
+        not host  # 无host头时容错
+    )
     is_admin = (api_key == settings.INTERNAL_API_KEY)
 
     # 3. 指定 API 访问控制 (确保数据不被外部轻松刷取)
@@ -167,9 +173,15 @@ async def api_key_middleware(request: Request, call_next):
             from fastapi.responses import JSONResponse
             return JSONResponse(status_code=401, content={"detail": "Unauthorized: 访问受限。"})
 
-    # 4. 针对足球数据的防盗刷
+    # 4. 针对足球数据的防盗刷 (公开看板公开数据允许只读，未知来源批量抓取时校验)
     if request.url.path.startswith("/api/v1/fd/"):
-        if not is_trusted_source and not is_admin:
+        # 允许看板核心公开查询（比赛、积分、射手）游客自由访问
+        is_dashboard_read = any(request.url.path.startswith(p) for p in [
+            "/api/v1/fd/matches",
+            "/api/v1/fd/leagues",
+            "/api/v1/fd/teams"
+        ])
+        if not is_dashboard_read and not is_trusted_source and not is_admin:
             from fastapi.responses import JSONResponse
             return JSONResponse(
                 status_code=403, 

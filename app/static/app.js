@@ -181,23 +181,34 @@ const app = createApp({
             }
         };
 
+        const loadDashboardData = async () => {
+            try {
+                await Promise.allSettled([
+                    fetchStats(),
+                    fetchMatches(),
+                    fetchLogs(),
+                    activeSource.value === 'fd' ? fetchStandings() : Promise.resolve(),
+                    activeSource.value === 'fd' ? fetchScorers() : Promise.resolve()
+                ]);
+            } catch (e) {
+                console.warn("loadDashboardData error:", e);
+            }
+        };
+
         const refreshAll = async () => {
             loading.value = true;
             try {
-                // 真正触发数据同步
+                // 1. 立即加载并呈现当前数据，避免页面呈现延迟
+                await loadDashboardData();
+                // 2. 触发服务端自愈与同步时间戳更新
                 await axios.get('/api/v1/refresh');
+                // 3. 再次拉取最新结果
+                await loadDashboardData();
             } catch (e) {
                 console.warn("Refresh sync warning:", e);
+            } finally {
+                loading.value = false;
             }
-
-            await Promise.allSettled([
-                fetchStats(),
-                fetchMatches(),
-                fetchLogs(),
-                activeSource.value === 'fd' ? fetchStandings() : Promise.resolve(),
-                activeSource.value === 'fd' ? fetchScorers() : Promise.resolve()
-            ]);
-            loading.value = false;
         };
 
         // Watchers
@@ -318,8 +329,17 @@ const app = createApp({
 
         // Init
         onMounted(() => {
-            refreshAll();
-            setInterval(refreshAll, 60000);
+            loading.value = true;
+            // 立即并行拉取数据展示，秒级渲染
+            loadDashboardData().finally(() => {
+                loading.value = false;
+            });
+            // 静默触发同步时间戳更新
+            axios.get('/api/v1/refresh').then(() => {
+                fetchStats();
+            }).catch(() => {});
+
+            setInterval(loadDashboardData, 60000);
         });
 
         return {

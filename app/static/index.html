@@ -242,6 +242,11 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        <tr v-if="standings.length === 0">
+                                            <td colspan="4" style="text-align:center; padding:20px; color:var(--text-dim);">
+                                                {{ loading ? '正在加载积分数据...' : '当前筛选条件下暂无积分数据' }}
+                                            </td>
+                                        </tr>
                                         <tr v-for="s in standings" :key="s.team_id">
                                             <td>
                                                 <div class="rank-num"
@@ -287,9 +292,9 @@
                                     </tbody>
                                 </table>
 
-                                <div v-if="activeTab === 'scorers' && scorers.length === 0"
+                                <div v-if="activeTab !== 'standings' && scorers.length === 0"
                                     style="padding:20px; text-align:center; color:var(--text-dim); font-size:12px;">
-                                    暂无射手榜数据
+                                    {{ loading ? '正在加载榜单数据...' : (activeTab === 'assists' ? '暂无助攻榜数据' : '暂无射手榜数据') }}
                                 </div>
                             </div>
                         </div>

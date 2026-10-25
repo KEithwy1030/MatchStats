@@ -624,10 +624,11 @@ class SportteryRepository(BaseRepository):
                 return
 
         try:
+            import asyncio
             from app.scrapers import SportteryScraper
             scraper = SportteryScraper()
-            schedules = await scraper.get_matches()
-            results = await scraper.get_match_results()
+            schedules = await asyncio.wait_for(scraper.get_matches(), timeout=3.0)
+            results = await asyncio.wait_for(scraper.get_match_results(), timeout=3.0)
             combined = schedules + results
             if combined:
                 # 给每条记录赋予临时全局唯一 id (如果不存在)
@@ -639,7 +640,7 @@ class SportteryRepository(BaseRepository):
                 _GLOBAL_LAST_SYNC_TIME = now.isoformat()
                 logger.info(f"成功自愈同步竞彩实时数据: 共 {len(combined)} 场")
         except Exception as e:
-            logger.error(f"竞彩实时自愈同步失败: {e}")
+            logger.warning(f"竞彩实时自愈同步超时或受限: {e}")
 
         # 若外部机房访问受限或未获取到数据，回退至基线竞彩数据
         if not _GLOBAL_SPORTTERY_CACHE:
