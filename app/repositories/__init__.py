@@ -641,6 +641,14 @@ class SportteryRepository(BaseRepository):
         except Exception as e:
             logger.error(f"竞彩实时自愈同步失败: {e}")
 
+        # 若外部机房访问受限或未获取到数据，回退至基线竞彩数据
+        if not _GLOBAL_SPORTTERY_CACHE:
+            from app.repositories.baseline_data import BASELINE_SPORTTERY_MATCHES
+            if BASELINE_SPORTTERY_MATCHES:
+                _GLOBAL_SPORTTERY_CACHE = list(BASELINE_SPORTTERY_MATCHES)
+                _GLOBAL_SPORTTERY_LAST_FETCH = now
+                _GLOBAL_LAST_SYNC_TIME = now.isoformat()
+
     async def get_match_by_code(self, match_code: str) -> Optional[Dict]:
         """获取单场竞彩比赛详细信息"""
         try:

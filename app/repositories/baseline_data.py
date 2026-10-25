@@ -4,7 +4,18 @@ MatchStats Baseline Data
 确保 to B 落地页和演示看板永远具备可用、完整、美观的欧洲主流联赛数据展示。
 """
 
+import os
+import json
 from typing import List, Dict
+
+BASELINE_SPORTTERY_MATCHES: List[Dict] = []
+try:
+    _json_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "data", "sporttery_baseline.json")
+    if os.path.exists(_json_path):
+        with open(_json_path, "r", encoding="utf-8") as f:
+            BASELINE_SPORTTERY_MATCHES = json.load(f)
+except Exception:
+    pass
 
 BASELINE_LEAGUES = [
     {"code": "PL", "name": "英超 Premier League", "country": "英格兰", "current_season": 2026},
