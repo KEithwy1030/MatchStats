@@ -150,6 +150,25 @@ body {
 .header-actions {
   display: flex;
   gap: 16px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.header-actions .tab-group {
+  margin: 0;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.header-actions .tab-btn {
+  min-width: 64px;
+  padding: 0 12px;
+  height: 100%;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn {
@@ -339,7 +358,7 @@ body {
 
 .tab-btn {
   flex: 1;
-  padding: 6px 10px;
+  padding: 6px 12px;
   font-size: 12px;
   background: transparent;
   border: 1px solid var(--border-color);
@@ -347,7 +366,10 @@ body {
   cursor: pointer;
   text-align: center;
   white-space: nowrap;
-  min-width: 52px;
+  min-width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .tab-btn:first-child { border-radius: 6px 0 0 6px; }
