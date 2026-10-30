@@ -12,33 +12,37 @@ fd_repo = FDRepository()
 sporttery_repo = SportteryRepository()
 log_repo = LogRepository()
 
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+APP_DIR = os.path.dirname(CURRENT_DIR)
+PROJECT_ROOT = os.path.dirname(APP_DIR)
+
 # ... (Existing Dicts can stay) ...
 
 @web_router.get("/")
 async def landing():
     """to B 落地页"""
-    return FileResponse(os.path.join("app", "static", "landing.html"))
+    return FileResponse(os.path.join(APP_DIR, "static", "landing.html"))
 
 
 @web_router.get("/dashboard")
 async def dashboard():
     """实时数据看板（原 Dashboard）"""
-    return FileResponse(os.path.join("app", "static", "index.html"))
+    return FileResponse(os.path.join(APP_DIR, "static", "index.html"))
 
 
 @web_router.get("/robots.txt")
 async def robots_txt():
-    return FileResponse("robots.txt", media_type="text/plain")
+    return FileResponse(os.path.join(PROJECT_ROOT, "robots.txt"), media_type="text/plain")
 
 
 @web_router.get("/sitemap.xml")
 async def sitemap_xml():
-    return FileResponse("sitemap.xml", media_type="application/xml")
+    return FileResponse(os.path.join(PROJECT_ROOT, "sitemap.xml"), media_type="application/xml")
 
 
 @web_router.get("/llms.txt")
 async def llms_txt():
-    return FileResponse("llms.txt", media_type="text/plain; charset=utf-8")
+    return FileResponse(os.path.join(PROJECT_ROOT, "llms.txt"), media_type="text/plain; charset=utf-8")
 
 
 # Preserve old routes just in case, or we can deprecate them.
