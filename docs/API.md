@@ -1,6 +1,7 @@
 # MatchStats API 文档
 
-> Base URL（生产）：`https://match-stats-keithwys-projects.vercel.app`
+> Base URL（生产推荐）：`https://kmatch-stats.vercel.app`
+> Base URL（生产别名）：`https://match-stats-keithwys-projects.vercel.app`
 > 本地开发：`http://localhost:8000`（见 README）
 
 ## 认证

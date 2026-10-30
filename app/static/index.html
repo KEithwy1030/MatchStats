@@ -68,14 +68,14 @@
                         刷新数据
                     </button>
                     <!-- Status Filter -->
-                    <div class="tab-group" style="margin:0; height:32px; flex-shrink:0;">
-                        <button class="tab-btn" :class="{ active: matchFilter === 'ALL' }"
+                    <div class="tab-group" style="margin:0; height:32px; flex-shrink:0; display:flex; align-items:center;">
+                        <button class="tab-btn" style="min-width:64px; white-space:nowrap;" :class="{ active: matchFilter === 'ALL' }"
                             @click="matchFilter = 'ALL'">全部</button>
-                        <button class="tab-btn" :class="{ active: matchFilter === 'LIVE' }"
+                        <button class="tab-btn" style="min-width:72px; white-space:nowrap;" :class="{ active: matchFilter === 'LIVE' }"
                             @click="matchFilter = 'LIVE'">进行中</button>
-                        <button class="tab-btn" :class="{ active: matchFilter === 'SCHEDULED' }"
+                        <button class="tab-btn" style="min-width:72px; white-space:nowrap;" :class="{ active: matchFilter === 'SCHEDULED' }"
                             @click="matchFilter = 'SCHEDULED'">未开始</button>
-                        <button class="tab-btn" :class="{ active: matchFilter === 'FINISHED' }"
+                        <button class="tab-btn" style="min-width:72px; white-space:nowrap;" :class="{ active: matchFilter === 'FINISHED' }"
                             @click="matchFilter = 'FINISHED'">已结束</button>
                     </div>
                 </div>
