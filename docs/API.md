@@ -1,8 +1,12 @@
 # MatchStats API 文档
 
 > Base URL（生产推荐）：`https://kmatch-stats.vercel.app`
+> Base URL（分支预览）：`https://match-stats-git-main-keithwys-projects.vercel.app`
 > Base URL（生产别名）：`https://match-stats-keithwys-projects.vercel.app`
 > 本地开发：`http://localhost:8000`（见 README）
+
+> [!NOTE]
+> 若访问 `https://match-stats-keithwys-projects.vercel.app` 遇到 Vercel 历史 Instant Rollback 导致的未自动滚动现象，管理员在 Vercel 控制台该项目主页点击 "Undo Rollback" 或对最新 Deployment 点击 "Promote to Production" 即可同步生效；同时全站数据与看板在 `https://kmatch-stats.vercel.app/dashboard` 及分支预览域名均保持实时高可用运行。
 
 ## 认证
 

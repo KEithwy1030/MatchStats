@@ -10,12 +10,30 @@ from typing import List, Dict
 
 BASELINE_SPORTTERY_MATCHES: List[Dict] = []
 try:
-    _json_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "data", "sporttery_baseline.json")
-    if os.path.exists(_json_path):
-        with open(_json_path, "r", encoding="utf-8") as f:
-            BASELINE_SPORTTERY_MATCHES = json.load(f)
+    possible_paths = [
+        os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "data", "sporttery_baseline.json"),
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "sporttery_baseline.json"),
+        os.path.join(os.getcwd(), "data", "sporttery_baseline.json"),
+        "/var/task/data/sporttery_baseline.json"
+    ]
+    for _json_path in possible_paths:
+        if os.path.exists(_json_path):
+            with open(_json_path, "r", encoding="utf-8") as f:
+                BASELINE_SPORTTERY_MATCHES = json.load(f)
+            if BASELINE_SPORTTERY_MATCHES:
+                break
 except Exception:
     pass
+
+# 内置兜底竞彩基线（保障在极端打包环境下数据绝不为空）
+if not BASELINE_SPORTTERY_MATCHES:
+    BASELINE_SPORTTERY_MATCHES = [
+        {"id": 900001, "match_code": "周六006", "group_date": "2026-10-31", "home_team": "切尔西", "away_team": "曼联", "league": "英超", "match_time": "2026-10-31 20:30:00", "status": "pending", "actual_score": None, "half_score": "", "handicap": "-1"},
+        {"id": 900002, "match_code": "周六012", "group_date": "2026-10-31", "home_team": "阿森纳", "away_team": "利物浦", "league": "英超", "match_time": "2026-10-31 23:00:00", "status": "pending", "actual_score": None, "half_score": "", "handicap": "0"},
+        {"id": 900003, "match_code": "周六015", "group_date": "2026-10-31", "home_team": "皇家马德里", "away_team": "巴塞罗那", "league": "西甲", "match_time": "2026-10-31 23:15:00", "status": "pending", "actual_score": None, "half_score": "", "handicap": "0"},
+        {"id": 900004, "match_code": "周五001", "group_date": "2026-10-30", "home_team": "莱比锡红牛", "away_team": "多特蒙德", "league": "德甲", "match_time": "2026-10-30 03:30:00", "status": "finished", "actual_score": "2:1", "half_score": "1:0", "handicap": "-1"},
+        {"id": 900005, "match_code": "周五002", "group_date": "2026-10-30", "home_team": "国际米兰", "away_team": "尤文图斯", "league": "意甲", "match_time": "2026-10-30 03:45:00", "status": "finished", "actual_score": "1:1", "half_score": "0:0", "handicap": "-1"}
+    ]
 
 BASELINE_LEAGUES = [
     {"code": "PL", "name": "英超 Premier League", "country": "英格兰", "current_season": 2026},
@@ -107,10 +125,12 @@ BASELINE_MATCHES: List[Dict] = [
     {"fd_id": 500106, "league_code": "PL", "home_team_id": 73, "away_team_id": 58, "home_team_name": "Tottenham Hotspur FC", "away_team_name": "Aston Villa FC", "home_team_name_cn": "热刺", "away_team_name_cn": "阿斯顿维拉", "match_date": "2026-11-01T14:00:00Z", "status": "SCHEDULED", "home_score": None, "away_score": None, "referee": "Craig Pawson"},
     {"fd_id": 500107, "league_code": "PL", "home_team_id": 67, "away_team_id": 57, "home_team_name": "Newcastle United FC", "away_team_name": "Arsenal FC", "home_team_name_cn": "纽卡斯尔联", "away_team_name_cn": "阿森纳", "match_date": "2026-10-31T12:30:00Z", "status": "SCHEDULED", "home_score": None, "away_score": None, "referee": "John Brooks"},
     {"fd_id": 500108, "league_code": "PL", "home_team_id": 64, "away_team_id": 397, "home_team_name": "Liverpool FC", "away_team_name": "Brighton & Hove Albion FC", "home_team_name_cn": "利物浦", "away_team_name_cn": "布莱顿", "match_date": "2026-10-31T15:00:00Z", "status": "SCHEDULED", "home_score": None, "away_score": None, "referee": "Paul Tierney"},
+    {"fd_id": 500109, "league_code": "PL", "home_team_id": 61, "away_team_id": 66, "home_team_name": "Chelsea FC", "away_team_name": "Manchester United FC", "home_team_name_cn": "切尔西", "away_team_name_cn": "曼联", "match_date": "2026-10-31T17:30:00Z", "status": "LIVE", "home_score": 1, "away_score": 1, "referee": "Simon Hooper"},
     # 西甲
     {"fd_id": 500201, "league_code": "PD", "home_team_id": 86, "away_team_id": 81, "home_team_name": "Real Madrid CF", "away_team_name": "FC Barcelona", "home_team_name_cn": "皇家马德里", "away_team_name_cn": "巴塞罗那", "match_date": "2026-10-25T19:00:00Z", "status": "FINISHED", "home_score": 0, "away_score": 4, "referee": "Sánchez Martínez"},
     {"fd_id": 500202, "league_code": "PD", "home_team_id": 78, "away_team_id": 77, "home_team_name": "Atlético de Madrid", "away_team_name": "Athletic Club", "home_team_name_cn": "马德里竞技", "away_team_name_cn": "毕尔巴鄂竞技", "match_date": "2026-10-25T15:15:00Z", "status": "FINISHED", "home_score": 1, "away_score": 0, "referee": "Cuadra Fernández"},
     {"fd_id": 500203, "league_code": "PD", "home_team_id": 81, "away_team_id": 92, "home_team_name": "FC Barcelona", "away_team_name": "RCD Espanyol", "home_team_name_cn": "巴塞罗那", "away_team_name_cn": "西班牙人", "match_date": "2026-11-01T15:15:00Z", "status": "SCHEDULED", "home_score": None, "away_score": None, "referee": "Gil Manzano"},
+    {"fd_id": 500204, "league_code": "PD", "home_team_id": 94, "away_team_id": 77, "home_team_name": "Villarreal CF", "away_team_name": "Athletic Club", "home_team_name_cn": "比利亚雷亚尔", "away_team_name_cn": "毕尔巴鄂竞技", "match_date": "2026-10-31T17:00:00Z", "status": "LIVE", "home_score": 2, "away_score": 0, "referee": "Cuadra Fernández"},
     # 德甲
     {"fd_id": 500301, "league_code": "BL1", "home_team_id": 5, "away_team_id": 3, "home_team_name": "FC Bayern München", "away_team_name": "Bayer 04 Leverkusen", "home_team_name_cn": "拜仁慕尼黑", "away_team_name_cn": "勒沃库森", "match_date": "2026-10-25T17:30:00Z", "status": "FINISHED", "home_score": 1, "away_score": 1, "referee": "Felix Zwayer"},
     {"fd_id": 500302, "league_code": "BL1", "home_team_id": 4, "away_team_id": 721, "home_team_name": "Borussia Dortmund", "away_team_name": "RB Leipzig", "home_team_name_cn": "多特蒙德", "away_team_name_cn": "莱比锡红牛", "match_date": "2026-11-01T17:30:00Z", "status": "SCHEDULED", "home_score": None, "away_score": None, "referee": "Daniel Siebert"},

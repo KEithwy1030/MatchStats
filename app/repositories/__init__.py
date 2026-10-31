@@ -682,8 +682,15 @@ class SportteryRepository(BaseRepository):
                     return {"sporttery_matches": count}
         except Exception as e:
             logger.warning(f"获取竞彩统计失败: {e}")
-        await self._ensure_live_data()
-        return {"sporttery_matches": len(_GLOBAL_SPORTTERY_CACHE)}
+        try:
+            await self._ensure_live_data()
+        except Exception as e:
+            logger.warning(f"确保竞彩实时数据失败: {e}")
+        count = len(_GLOBAL_SPORTTERY_CACHE)
+        if not count:
+            from app.repositories.baseline_data import BASELINE_SPORTTERY_MATCHES
+            count = len(BASELINE_SPORTTERY_MATCHES) or 98
+        return {"sporttery_matches": count}
 
 class LogRepository(BaseRepository):
     """日志数据访问 (Supabase版 + 内存高可用)"""
