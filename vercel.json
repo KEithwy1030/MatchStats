@@ -1,10 +1,7 @@
 {
   "functions": {
     "api/index.py": {
-      "includeFiles": [
-        "data/**",
-        "app/static/**"
-      ]
+      "includeFiles": "data/**"
     }
   }
 }
