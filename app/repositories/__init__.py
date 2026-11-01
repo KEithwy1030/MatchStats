@@ -500,8 +500,14 @@ class FDRepository(BaseRepository):
         response = self.client.table('fd_matches').select("fd_id").eq('status', status).execute()
         return [row['fd_id'] for row in response.data]
 
+# 模块级全局共享缓存与同步状态
+_GLOBAL_SPORTTERY_CACHE: List[Dict] = []
+_GLOBAL_SPORTTERY_LAST_FETCH: Optional[datetime] = None
+_GLOBAL_RUNTIME_LOGS: List[Dict] = []
+_GLOBAL_LAST_SYNC_TIME: Optional[str] = None
+
 class SportteryRepository(BaseRepository):
-    """竞彩数据访问 (Supabase版)"""
+    """竞彩数据访问 (Supabase版 + 实时自愈抓取)"""
 
     async def save_match(self, match: Dict) -> bool:
         """保存比赛"""
@@ -563,15 +569,6 @@ class SportteryRepository(BaseRepository):
         except Exception as e:
             logger.error(f"Supabase 更新竞彩比分失败 ({match_code}): {e}")
             return False
-
-# 模块级全局共享缓存与同步状态
-_GLOBAL_SPORTTERY_CACHE: List[Dict] = []
-_GLOBAL_SPORTTERY_LAST_FETCH: Optional[datetime] = None
-_GLOBAL_RUNTIME_LOGS: List[Dict] = []
-_GLOBAL_LAST_SYNC_TIME: Optional[str] = None
-
-class SportteryRepository(BaseRepository):
-    """竞彩数据访问 (Supabase版 + 实时自愈抓取)"""
 
     async def get_matches(self, date: Optional[str] = None,
                           status: Optional[str] = None,

@@ -81,6 +81,18 @@ BASELINE_STANDINGS: Dict[str, List[Dict]] = {
         {"position": 1, "team_id": 524, "team_name": "Paris Saint-Germain FC", "team_name_cn": "巴黎圣日耳曼", "played_games": 9, "won": 7, "draw": 2, "lost": 0, "points": 23, "goals_for": 28, "goals_against": 8, "goal_diff": 20, "league_code": "FL1", "season": 2026},
         {"position": 2, "team_id": 548, "team_name": "AS Monaco FC", "team_name_cn": "摩纳哥", "played_games": 9, "won": 6, "draw": 2, "lost": 1, "points": 20, "goals_for": 15, "goals_against": 6, "goal_diff": 9, "league_code": "FL1", "season": 2026},
         {"position": 3, "team_id": 516, "team_name": "Olympique de Marseille", "team_name_cn": "马赛", "played_games": 9, "won": 5, "draw": 2, "lost": 2, "points": 17, "goals_for": 21, "goals_against": 11, "goal_diff": 10, "league_code": "FL1", "season": 2026},
+    ],
+    "CL": [
+        {"position": 1, "team_id": 58, "team_name": "Aston Villa FC", "team_name_cn": "阿斯顿维拉", "played_games": 3, "won": 3, "draw": 0, "lost": 0, "points": 9, "goals_for": 6, "goals_against": 0, "goal_diff": 6, "league_code": "CL", "season": 2026},
+        {"position": 2, "team_id": 64, "team_name": "Liverpool FC", "team_name_cn": "利物浦", "played_games": 3, "won": 3, "draw": 0, "lost": 0, "points": 9, "goals_for": 6, "goals_against": 1, "goal_diff": 5, "league_code": "CL", "season": 2026},
+        {"position": 3, "team_id": 65, "team_name": "Manchester City FC", "team_name_cn": "曼城", "played_games": 3, "won": 2, "draw": 1, "lost": 0, "points": 7, "goals_for": 9, "goals_against": 0, "goal_diff": 9, "league_code": "CL", "season": 2026},
+        {"position": 4, "team_id": 548, "team_name": "AS Monaco FC", "team_name_cn": "摩纳哥", "played_games": 3, "won": 2, "draw": 1, "lost": 0, "points": 7, "goals_for": 9, "goals_against": 4, "goal_diff": 5, "league_code": "CL", "season": 2026},
+        {"position": 5, "team_id": 3, "team_name": "Bayer 04 Leverkusen", "team_name_cn": "勒沃库森", "played_games": 3, "won": 2, "draw": 1, "lost": 0, "points": 7, "goals_for": 6, "goals_against": 1, "goal_diff": 5, "league_code": "CL", "season": 2026},
+        {"position": 6, "team_id": 108, "team_name": "FC Internazionale Milano", "team_name_cn": "国际米兰", "played_games": 3, "won": 2, "draw": 1, "lost": 0, "points": 7, "goals_for": 5, "goals_against": 0, "goal_diff": 5, "league_code": "CL", "season": 2026},
+        {"position": 7, "team_id": 57, "team_name": "Arsenal FC", "team_name_cn": "阿森纳", "played_games": 3, "won": 2, "draw": 1, "lost": 0, "points": 7, "goals_for": 3, "goals_against": 0, "goal_diff": 3, "league_code": "CL", "season": 2026},
+        {"position": 8, "team_id": 81, "team_name": "FC Barcelona", "team_name_cn": "巴塞罗那", "played_games": 3, "won": 2, "draw": 0, "lost": 1, "points": 6, "goals_for": 10, "goals_against": 3, "goal_diff": 7, "league_code": "CL", "season": 2026},
+        {"position": 9, "team_id": 4, "team_name": "Borussia Dortmund", "team_name_cn": "多特蒙德", "played_games": 3, "won": 2, "draw": 0, "lost": 1, "points": 6, "goals_for": 12, "goals_against": 6, "goal_diff": 6, "league_code": "CL", "season": 2026},
+        {"position": 10, "team_id": 86, "team_name": "Real Madrid CF", "team_name_cn": "皇家马德里", "played_games": 3, "won": 2, "draw": 0, "lost": 1, "points": 6, "goals_for": 8, "goals_against": 4, "goal_diff": 4, "league_code": "CL", "season": 2026},
     ]
 }
 
@@ -111,6 +123,13 @@ BASELINE_SCORERS: Dict[str, List[Dict]] = {
     "FL1": [
         {"player_id": 11528, "player_name": "Bradley Barcola", "team_id": 524, "team_name": "Paris Saint-Germain FC", "team_name_cn": "巴黎圣日耳曼", "goals": 8, "assists": 1, "penalties": 0, "played_matches": 9, "league_code": "FL1", "season": 2026},
         {"player_id": 9214, "player_name": "Mason Greenwood", "team_id": 516, "team_name": "Olympique de Marseille", "team_name_cn": "马赛", "goals": 6, "assists": 1, "penalties": 1, "played_matches": 9, "league_code": "FL1", "season": 2026},
+    ],
+    "CL": [
+        {"player_id": 8004, "player_name": "Harry Kane", "team_id": 5, "team_name": "FC Bayern München", "team_name_cn": "拜仁慕尼黑", "goals": 5, "assists": 1, "penalties": 3, "played_matches": 3, "league_code": "CL", "season": 2026},
+        {"player_id": 758, "player_name": "Raphinha", "team_id": 81, "team_name": "FC Barcelona", "team_name_cn": "巴塞罗那", "goals": 4, "assists": 1, "penalties": 0, "played_matches": 3, "league_code": "CL", "season": 2026},
+        {"player_id": 38101, "player_name": "Erling Haaland", "team_id": 65, "team_name": "Manchester City FC", "team_name_cn": "曼城", "goals": 3, "assists": 0, "penalties": 0, "played_matches": 3, "league_code": "CL", "season": 2026},
+        {"player_id": 371, "player_name": "Robert Lewandowski", "team_id": 81, "team_name": "FC Barcelona", "team_name_cn": "巴塞罗那", "goals": 3, "assists": 0, "penalties": 0, "played_matches": 3, "league_code": "CL", "season": 2026},
+        {"player_id": 2097, "player_name": "Vinícius Júnior", "team_id": 86, "team_name": "Real Madrid CF", "team_name_cn": "皇家马德里", "goals": 3, "assists": 2, "penalties": 0, "played_matches": 3, "league_code": "CL", "season": 2026},
     ]
 }
 
@@ -134,9 +153,19 @@ BASELINE_MATCHES: List[Dict] = [
     # 德甲
     {"fd_id": 500301, "league_code": "BL1", "home_team_id": 5, "away_team_id": 3, "home_team_name": "FC Bayern München", "away_team_name": "Bayer 04 Leverkusen", "home_team_name_cn": "拜仁慕尼黑", "away_team_name_cn": "勒沃库森", "match_date": "2026-10-25T17:30:00Z", "status": "FINISHED", "home_score": 1, "away_score": 1, "referee": "Felix Zwayer"},
     {"fd_id": 500302, "league_code": "BL1", "home_team_id": 4, "away_team_id": 721, "home_team_name": "Borussia Dortmund", "away_team_name": "RB Leipzig", "home_team_name_cn": "多特蒙德", "away_team_name_cn": "莱比锡红牛", "match_date": "2026-11-01T17:30:00Z", "status": "SCHEDULED", "home_score": None, "away_score": None, "referee": "Daniel Siebert"},
+    {"fd_id": 500303, "league_code": "BL1", "home_team_id": 5, "away_team_id": 11, "home_team_name": "FC Bayern München", "away_team_name": "VfL Wolfsburg", "home_team_name_cn": "拜仁慕尼黑", "away_team_name_cn": "沃尔夫斯堡", "match_date": "2026-10-31T14:30:00Z", "status": "LIVE", "home_score": 3, "away_score": 1, "referee": "Patrick Ittrich"},
     # 意甲
     {"fd_id": 500401, "league_code": "SA", "home_team_id": 108, "away_team_id": 109, "home_team_name": "FC Internazionale Milano", "away_team_name": "Juventus FC", "home_team_name_cn": "国际米兰", "away_team_name_cn": "尤文图斯", "match_date": "2026-10-25T17:00:00Z", "status": "FINISHED", "home_score": 4, "away_score": 4, "referee": "Marco Guida"},
     {"fd_id": 500402, "league_code": "SA", "home_team_id": 98, "away_team_id": 113, "home_team_name": "AC Milan", "away_team_name": "SSC Napoli", "home_team_name_cn": "AC米兰", "away_team_name_cn": "那不勒斯", "match_date": "2026-10-29T19:45:00Z", "status": "SCHEDULED", "home_score": None, "away_score": None, "referee": "Daniele Chiffi"},
+    {"fd_id": 500403, "league_code": "SA", "home_team_id": 102, "away_team_id": 110, "home_team_name": "Atalanta BC", "away_team_name": "SS Lazio", "home_team_name_cn": "亚特兰大", "away_team_name_cn": "拉齐奥", "match_date": "2026-10-31T19:45:00Z", "status": "LIVE", "home_score": 2, "away_score": 1, "referee": "Davide Massa"},
     # 法甲
     {"fd_id": 500501, "league_code": "FL1", "home_team_id": 516, "away_team_id": 524, "home_team_name": "Olympique de Marseille", "away_team_name": "Paris Saint-Germain FC", "home_team_name_cn": "马赛", "away_team_name_cn": "巴黎圣日耳曼", "match_date": "2026-10-25T19:45:00Z", "status": "FINISHED", "home_score": 0, "away_score": 3, "referee": "François Letexier"},
+    {"fd_id": 500502, "league_code": "FL1", "home_team_id": 524, "away_team_id": 548, "home_team_name": "Paris Saint-Germain FC", "away_team_name": "AS Monaco FC", "home_team_name_cn": "巴黎圣日耳曼", "away_team_name_cn": "摩纳哥", "match_date": "2026-11-01T20:00:00Z", "status": "SCHEDULED", "home_score": None, "away_score": None, "referee": "Benoît Bastien"},
+    {"fd_id": 500503, "league_code": "FL1", "home_team_id": 548, "away_team_id": 523, "home_team_name": "AS Monaco FC", "away_team_name": "Stade Rennais FC", "home_team_name_cn": "摩纳哥", "away_team_name_cn": "雷恩", "match_date": "2026-10-31T18:00:00Z", "status": "LIVE", "home_score": 1, "away_score": 0, "referee": "Jérôme Brisard"},
+    # 欧冠
+    {"fd_id": 500601, "league_code": "CL", "home_team_id": 86, "away_team_id": 4, "home_team_name": "Real Madrid CF", "away_team_name": "Borussia Dortmund", "home_team_name_cn": "皇家马德里", "away_team_name_cn": "多特蒙德", "match_date": "2026-10-22T19:00:00Z", "status": "FINISHED", "home_score": 5, "away_score": 2, "referee": "István Kovács"},
+    {"fd_id": 500602, "league_code": "CL", "home_team_id": 81, "away_team_id": 5, "home_team_name": "FC Barcelona", "away_team_name": "FC Bayern München", "home_team_name_cn": "巴塞罗那", "away_team_name_cn": "拜仁慕尼黑", "match_date": "2026-10-23T19:00:00Z", "status": "FINISHED", "home_score": 4, "away_score": 1, "referee": "Slavko Vinčić"},
+    {"fd_id": 500603, "league_code": "CL", "home_team_id": 64, "away_team_id": 3, "home_team_name": "Liverpool FC", "away_team_name": "Bayer 04 Leverkusen", "home_team_name_cn": "利物浦", "away_team_name_cn": "勒沃库森", "match_date": "2026-11-05T20:00:00Z", "status": "SCHEDULED", "home_score": None, "away_score": None, "referee": "Danny Makkelie"},
+    {"fd_id": 500604, "league_code": "CL", "home_team_id": 108, "away_team_id": 57, "home_team_name": "FC Internazionale Milano", "away_team_name": "Arsenal FC", "home_team_name_cn": "国际米兰", "away_team_name_cn": "阿森纳", "match_date": "2026-11-06T20:00:00Z", "status": "SCHEDULED", "home_score": None, "away_score": None, "referee": "Felix Zwayer"},
+    {"fd_id": 500605, "league_code": "CL", "home_team_id": 86, "away_team_id": 98, "home_team_name": "Real Madrid CF", "away_team_name": "AC Milan", "home_team_name_cn": "皇家马德里", "away_team_name_cn": "AC米兰", "match_date": "2026-10-31T20:00:00Z", "status": "LIVE", "home_score": 1, "away_score": 1, "referee": "Szymon Marciniak"},
 ]
