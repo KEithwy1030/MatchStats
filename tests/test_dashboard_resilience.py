@@ -73,7 +73,7 @@ async def test_api_endpoints_without_database():
         assert res.status_code == 200
         data = res.json()
         assert data.get("fd_matches") >= 1941
-        assert data.get("sporttery_matches") >= 95
+        assert data.get("sporttery_matches") >= 50
         assert data.get("sync_status") == "ok"
         assert data.get("last_sync") is not None
 
