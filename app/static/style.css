@@ -241,6 +241,11 @@ a {
   flex-shrink: 0;
 }
 
+.header-actions .btn {
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
 .header-actions .tab-group {
   margin: 0;
   height: 32px;
@@ -944,28 +949,46 @@ tr:hover td {
   }
   .header-actions {
     width: 100%;
-    justify-content: space-between;
+    display: flex;
+    align-items: center;
+    gap: 8px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     padding-bottom: 2px;
+    flex-wrap: nowrap;
+  }
+  .header-actions .btn {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    padding: 0 10px !important;
+    font-size: 12px !important;
   }
   .header-actions .tab-group {
     max-width: 100%;
-    flex-shrink: 0;
+    flex-shrink: 0 !important;
+    width: max-content !important;
+    display: inline-flex !important;
+    flex-wrap: nowrap !important;
   }
   .header-actions .tab-btn {
     min-width: 60px !important;
-    padding: 0 8px !important;
-    font-size: 12px;
+    padding: 0 10px !important;
+    font-size: 12px !important;
     white-space: nowrap !important;
     word-break: keep-all !important;
     flex-shrink: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
   .header-actions .tab-btn.tab-btn-three {
     min-width: 76px !important;
-    padding: 0 8px !important;
+    padding: 0 10px !important;
     white-space: nowrap !important;
     word-break: keep-all !important;
     flex-shrink: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 }
