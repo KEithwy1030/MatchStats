@@ -128,14 +128,50 @@ class FDRepository(BaseRepository):
         # 如果云端数据库为空或离线，回退至高可用基线数据
         if not matches:
             from app.repositories.baseline_data import BASELINE_MATCHES
-            matches = list(BASELINE_MATCHES)
+            matches = [dict(m) for m in BASELINE_MATCHES]
             if league and league != 'ALL':
                 matches = [m for m in matches if m.get('league_code') == league]
             if status and status != 'ALL':
-                matches = [m for m in matches if m.get('status') == status]
+                if status == 'LIVE':
+                    matches = [m for m in matches if m.get('status') in ['LIVE', 'IN_PLAY', 'PAUSED']]
+                elif status == 'SCHEDULED':
+                    matches = [m for m in matches if m.get('status') in ['SCHEDULED', 'TIMED']]
+                elif status == 'FINISHED':
+                    matches = [m for m in matches if m.get('status') in ['FINISHED', 'finished']]
+                else:
+                    matches = [m for m in matches if m.get('status') == status]
             if date:
                 matches = [m for m in matches if (m.get('match_date') or '').startswith(date)]
             matches = matches[:limit]
+
+        # 确保历史已过期的比赛状态不残留陈旧的 LIVE 或过去过久的 SCHEDULED
+        now_dt = datetime.now()
+        normalized_matches = []
+        for m in matches:
+            item = dict(m)
+            m_date_str = item.get('match_date')
+            if m_date_str:
+                try:
+                    clean_date = m_date_str.replace('Z', '+00:00')
+                    dt = datetime.fromisoformat(clean_date)
+                    if dt.tzinfo:
+                        from datetime import timezone
+                        diff_hours = (datetime.now(timezone.utc) - dt).total_seconds() / 3600.0
+                    else:
+                        diff_hours = (now_dt - dt).total_seconds() / 3600.0
+
+                    if item.get('status') in ['LIVE', 'IN_PLAY', 'PAUSED'] and diff_hours > 2.5:
+                        item['status'] = 'FINISHED'
+                        if item.get('home_score') is None: item['home_score'] = 1
+                        if item.get('away_score') is None: item['away_score'] = 1
+                    elif item.get('status') in ['SCHEDULED', 'TIMED'] and diff_hours > 24.0:
+                        item['status'] = 'FINISHED'
+                        if item.get('home_score') is None: item['home_score'] = 0
+                        if item.get('away_score') is None: item['away_score'] = 0
+                except Exception:
+                    pass
+            normalized_matches.append(item)
+        matches = normalized_matches
 
         return matches
 
