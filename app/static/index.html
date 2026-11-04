@@ -4,17 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MatchStats // 专业赛事数据与量化分析终端</title>
-    <meta name="theme-color" content="#080c12">
-    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <title>MatchStats 赛事数据中心</title>
+    <meta name="theme-color" content="#0a1f16">
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Design System CSS Tokens -->
-    <link rel="stylesheet" href="/static/tokens.css">
-    <!-- Main Terminal Stylesheet -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Saira:wght@400;500;600;700;800&family=Saira+Condensed:wght@600;700&family=JetBrains+Mono:wght@400;600;700&family=PingFang+SC:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <!-- CSS -->
     <link rel="stylesheet" href="/static/style.css">
-    <!-- Vue 3 Production & Axios -->
+    <!-- Scripts -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <!-- Phosphor Icons -->
@@ -22,167 +22,109 @@
 </head>
 
 <body>
-    <div id="app" class="terminal-shell">
-        <!-- Sidebar Navigation -->
+    <div id="app">
+        <!-- Sidebar -->
         <aside class="sidebar">
-            <div class="sidebar-top">
-                <a href="/matchstats/" class="brand-badge-link" title="MatchStats Terminal">
-                    <div class="brand-icon-box">
-                        <i class="ph-bold ph-chart-polar"></i>
-                    </div>
-                    <div class="brand-text">
-                        <span class="brand-name">Match<em>Stats</em></span>
-                        <span class="brand-edition">QUANT PRO</span>
-                    </div>
+            <a href="/matchstats/" class="brand" title="MatchStats">
+                <i class="ph-fill ph-soccer-ball logo-icon"></i>
+                <span>Match<em>Stats</em></span>
+            </a>
+
+            <nav class="nav-menu">
+                <a href="/" class="nav-item nav-home-link" style="display: none !important;" title="返回官网首页">
+                    <i class="ph ph-arrow-left"></i>
+                    <span>返回官网首页</span>
                 </a>
-
-                <nav class="nav-menu">
-                    <!-- Home Return link (hidden by default) -->
-                    <a href="/" class="nav-item nav-home-link" style="display: none !important;" title="返回官网首页">
-                        <i class="ph ph-arrow-left"></i>
-                        <span>返回官网首页</span>
-                    </a>
-                    
-                    <button class="nav-item" :class="{ active: activeSource === 'fd' }" @click="activeSource = 'fd'">
-                        <i class="ph-bold ph-globe-hemisphere-west"></i>
-                        <span>欧洲主流赛事</span>
-                        <span class="nav-counter">{{ stats.fd_matches || '0' }}</span>
-                    </button>
-
-                    <!-- 中国竞彩数据（依合规要求前端严格隐藏，业务逻辑代码100%保留） -->
-                    <button class="nav-item" :class="{ active: activeSource === 'sporttery' }"
-                        @click="activeSource = 'sporttery'" style="display: none !important;">
-                        <i class="ph ph-flag-banner"></i>
-                        <span>中国竞彩数据</span>
-                    </button>
-                </nav>
-            </div>
+                <div class="nav-item" :class="{ active: activeSource === 'fd' }" @click="activeSource = 'fd'">
+                    <i class="ph ph-globe-hemisphere-west"></i>
+                    <span>欧洲赛事数据</span>
+                </div>
+                <!-- 中国竞彩数据（已停用前端展示，逻辑代码完整保留） -->
+                <div class="nav-item" :class="{ active: activeSource === 'sporttery' }"
+                    @click="activeSource = 'sporttery'" style="display: none !important;">
+                    <i class="ph ph-flag-banner"></i>
+                    <span>中国竞彩数据</span>
+                </div>
+            </nav>
 
             <div class="sidebar-footer">
-                <div class="telemetry-card">
-                    <div class="telemetry-header">
-                        <span class="status-indicator-dot" :class="{ error: stats.sync_status === 'error' }"></span>
-                        <span class="telemetry-label">DATABASE ENGINE</span>
-                        <span class="telemetry-val">{{ stats.sync_status === 'error' ? 'ERR' : 'ACTIVE' }}</span>
-                    </div>
-                    <div class="telemetry-sub">
-                        <i class="ph ph-clock"></i>
-                        <span>{{ formatDateTime(stats.last_sync) }}</span>
-                    </div>
+                <div class="sys-status">
+                    <span class="status-dot"></span> 系统运行正常<br>
+                    <span style="opacity:0.5; font-size:11px; margin-top:4px; display:block;">最后同步: {{
+                        formatDateTime(stats.last_sync) }}</span>
                 </div>
             </div>
         </aside>
 
-        <!-- Main Workspace -->
+        <!-- Main Content -->
         <main class="main-content">
-            <!-- Terminal Header -->
+            <!-- Header -->
             <header class="header">
-                <div class="header-left">
-                    <div class="header-brand-mobile">
-                        <i class="ph-bold ph-chart-polar"></i>
-                        <span>Match<em>Stats</em></span>
-                    </div>
-                    <div class="header-title-wrap">
-                        <h1 class="header-title">{{ activeSource === 'fd' ? '欧洲主流联赛 (Football-Data)' : '中国体育彩票 (竞彩官网)' }} 数据中心</h1>
-                        <span class="header-subtitle">Opta AI 三轨胜率量化与实时赛事态势流</span>
-                    </div>
+                <div class="header-title">
+                    <h2>{{ activeSource === 'fd' ? '欧洲主流联赛 (Football-Data)' : '中国体育彩票 (竞彩官网)' }} 数据概览</h2>
                 </div>
-
                 <div class="header-actions">
-                    <!-- Global Refresh Button -->
-                    <button class="btn btn-refresh" @click="refreshAll" :disabled="loading" title="重新拉取最新赛事与胜率">
-                        <i class="ph-bold ph-arrows-clockwise" :class="{ 'ph-spin': loading }"></i>
-                        <span>{{ loading ? '同步中...' : '刷新数据' }}</span>
+                    <button class="btn" @click="refreshAll" :disabled="loading" style="white-space:nowrap; flex-shrink:0;">
+                        <i class="ph ph-arrows-clockwise" :class="{ 'ph-spin': loading }"></i>
+                        刷新数据
                     </button>
-
-                    <!-- Match Status Segmented Filter -->
-                    <div class="segmented-control status-segmented" role="tablist">
-                        <button class="seg-btn" :class="{ active: matchFilter === 'ALL' }" @click="matchFilter = 'ALL'">
-                            <span>全部</span>
-                        </button>
-                        <button class="seg-btn" :class="{ active: matchFilter === 'LIVE' }" @click="matchFilter = 'LIVE'">
-                            <span class="live-dot-pulse" v-if="matchFilter === 'LIVE'"></span>
-                            <span>进行中</span>
-                        </button>
-                        <button class="seg-btn" :class="{ active: matchFilter === 'SCHEDULED' }" @click="matchFilter = 'SCHEDULED'">
-                            <span>未开始</span>
-                        </button>
-                        <button class="seg-btn" :class="{ active: matchFilter === 'FINISHED' }" @click="matchFilter = 'FINISHED'">
-                            <span>已结束</span>
-                        </button>
+                    <!-- Status Filter -->
+                    <div class="tab-group" style="margin:0; height:32px; flex-shrink:0; display:inline-flex; align-items:center; width:max-content; flex-wrap:nowrap;">
+                        <button class="tab-btn" style="min-width:64px; white-space:nowrap; flex-shrink:0; word-break:keep-all;" :class="{ active: matchFilter === 'ALL' }"
+                            @click="matchFilter = 'ALL'">全部</button>
+                        <button class="tab-btn tab-btn-three" style="min-width:80px; white-space:nowrap; flex-shrink:0; word-break:keep-all;" :class="{ active: matchFilter === 'LIVE' }"
+                            @click="matchFilter = 'LIVE'">进行中</button>
+                        <button class="tab-btn tab-btn-three" style="min-width:80px; white-space:nowrap; flex-shrink:0; word-break:keep-all;" :class="{ active: matchFilter === 'SCHEDULED' }"
+                            @click="matchFilter = 'SCHEDULED'">未开始</button>
+                        <button class="tab-btn tab-btn-three" style="min-width:80px; white-space:nowrap; flex-shrink:0; word-break:keep-all;" :class="{ active: matchFilter === 'FINISHED' }"
+                            @click="matchFilter = 'FINISHED'">已结束</button>
                     </div>
                 </div>
             </header>
 
             <div class="content-scroll">
-                <!-- Terminal HUD Ribbon (Brand Signature 2: High-density Telemetry) -->
-                <div class="terminal-hud-ribbon">
-                    <div class="hud-item">
-                        <span class="hud-label">欧洲赛事总库存</span>
-                        <div class="hud-val-row">
-                            <span class="hud-value">{{ stats.fd_matches }}</span>
-                            <span class="hud-unit">场</span>
-                        </div>
-                    </div>
-                    <div class="hud-divider"></div>
 
-                    <!-- 竞彩统计指标卡（前端隐藏，代码保留） -->
-                    <div class="hud-item" style="display: none !important;">
-                        <span class="hud-label">竞彩官网记录</span>
-                        <span class="hud-value">{{ stats.sporttery_matches }}</span>
+                <!-- Stat Cards -->
+                <div class="dashboard-grid" style="margin-bottom: 24px;">
+                    <div class="stat-card card">
+                        <div class="stat-value">{{ stats.fd_matches }}</div>
+                        <div class="stat-sub">欧洲赛事总库存</div>
                     </div>
-
-                    <div class="hud-item">
-                        <span class="hud-label">当前视图匹配</span>
-                        <div class="hud-val-row">
-                            <span class="hud-value text-accent">{{ matches.length }}</span>
-                            <span class="hud-unit">场</span>
-                        </div>
+                    <!-- 竞彩统计卡片（已停用前端展示，代码保留） -->
+                    <div class="stat-card card" style="display: none !important;">
+                        <div class="stat-value">{{ stats.sporttery_matches }}</div>
+                        <div class="stat-sub">竞彩官网记录数</div>
                     </div>
-                    <div class="hud-divider"></div>
-
-                    <div class="hud-item">
-                        <span class="hud-label">数据库健康状态</span>
-                        <div class="hud-status-badge" :class="{ error: stats.sync_status === 'error' }">
-                            <span class="status-indicator-dot" :class="{ error: stats.sync_status === 'error' }"></span>
-                            <span>{{ stats.sync_status === 'error' ? '同步异常' : '集群活跃' }}</span>
-                        </div>
+                    <div class="stat-card card" style="border-color: var(--primary);">
+                        <div class="stat-value">{{ matches.length }}</div>
+                        <div class="stat-sub">当前视图场次</div>
                     </div>
-                    <div class="hud-divider"></div>
-
-                    <div class="hud-item hud-item-time">
-                        <span class="hud-label">最近节点同步</span>
-                        <div class="hud-time-val">
-                            <i class="ph ph-arrows-left-right"></i>
-                            <span>{{ formatDateTime(stats.last_sync) }}</span>
-                        </div>
+                    <div class="stat-card card">
+                        <div class="stat-value" :style="{ color: stats.sync_status === 'error' ? 'var(--danger)' : 'var(--accent)' }">{{ stats.sync_status === 'error' ? '异常' : '活跃' }}</div>
+                        <div class="stat-sub">数据库状态</div>
                     </div>
                 </div>
 
-                <!-- Main Layout Grid -->
-                <div class="workspace-grid">
-                    <!-- Left Section: Matches Workbench -->
-                    <section class="panel-section match-section">
-                        <!-- League Filter Header Bar -->
-                        <div class="section-toolbar">
-                            <div class="toolbar-title">
-                                <i class="ph-bold ph-calendar-blank"></i>
-                                <span>比赛日程表</span>
-                            </div>
+                <div class="dashboard-grid">
 
-                            <!-- League Pills for FD (Horizontal Scrollable) -->
-                            <div v-if="activeSource === 'fd'" class="league-pills-strip">
-                                <button class="league-pill" :class="{ active: activeLeague === 'ALL' }"
-                                    @click="activeLeague = 'ALL'">全部联赛</button>
-                                <button v-for="l in leagues" :key="l.code" class="league-pill"
+                    <!-- Matches List -->
+                    <div class="match-section card">
+                        <div class="card-title">
+                            <span>比赛日程表</span>
+
+                            <!-- League Selector for FD -->
+                            <div v-if="activeSource === 'fd'" class="tab-group" style="margin:0;">
+                                <button class="tab-btn" :class="{ active: activeLeague === 'ALL' }"
+                                    @click="activeLeague = 'ALL'">全部</button>
+                                <button v-for="l in leagues" class="tab-btn"
                                     :class="{ active: activeLeague === l.code }" @click="activeLeague = l.code">
                                     {{ l.name }}
                                 </button>
                             </div>
 
-                            <!-- Date Selector for Sporttery (Kept for compatibility) -->
-                            <div v-if="activeSource === 'sporttery'" class="league-pills-strip">
-                                <button v-for="date in sportteryDates" :key="date" class="league-pill"
+                            <!-- Date Selector for Sporttery -->
+                            <div v-if="activeSource === 'sporttery'" class="tab-group" style="margin:0;">
+                                <button v-for="date in sportteryDates" class="tab-btn"
                                     :class="{ active: activeSportteryDate === date }"
                                     @click="activeSportteryDate = date">
                                     {{ formatDate(date) }}
@@ -190,462 +132,351 @@
                             </div>
                         </div>
 
-                        <!-- Matches List Stream -->
-                        <div class="matches-list-container">
-                            <!-- Empty / Loading States -->
-                            <div v-if="loading && matches.length === 0" class="empty-state-box">
-                                <i class="ph-bold ph-arrows-clockwise ph-spin"></i>
-                                <span>正在检索同步最新赛事数据...</span>
+                        <div class="matches-list">
+                            <div v-if="loading && matches.length === 0"
+                                style="padding:20px; text-align:center; color:var(--text-dim);">
+                                正在加载比赛数据...
                             </div>
-                            <div v-else-if="matches.length === 0" class="empty-state-box">
-                                <i class="ph ph-tray"></i>
-                                <span>当前筛选条件下暂无比赛数据</span>
+                            <div v-else-if="matches.length === 0"
+                                style="padding:20px; text-align:center; color:var(--text-dim);">
+                                当前筛选条件下暂无比赛数据
                             </div>
 
-                            <!-- Match Row Item (Opta AI Tri-Spectrum Card) -->
-                            <div v-for="m in displayMatches" :key="m.id || m.match_code || m.fd_id"
-                                class="match-row-card" @click="openMatchDetails(m)" role="button" tabindex="0">
-                                
-                                <!-- FD Source View -->
+                            <div v-for="m in displayMatches" :key="m.id || m.match_code" class="match-item"
+                                @click="openMatchDetails(m)" style="cursor: pointer;">
+                                <!-- FD Structure -->
                                 <template v-if="activeSource === 'fd'">
-                                    <!-- Time & Date Column -->
-                                    <div class="match-time-cell">
-                                        <div class="time-primary">{{ formatTime(m.match_date) }}</div>
-                                        <div class="date-secondary">{{ formatDate(m.match_date) }}</div>
+                                    <div class="m-time">
+                                        <div v-if="(m.status === 'LIVE' || m.status === 'IN_PLAY' || m.status === 'PAUSED')"
+                                            class="live-indicator"></div>
+                                        <div>{{ formatTime(m.match_date) }}</div>
+                                        <div style="font-size:10px; opacity:0.6;">{{ formatDate(m.match_date) }}</div>
                                     </div>
-
-                                    <!-- Teams & Scoreboard Column -->
-                                    <div class="match-core-cell">
-                                        <div class="teams-versus-grid">
-                                            <!-- Home Team -->
-                                            <div class="team-unit team-home" :class="{ winner: m.status === 'FINISHED' && m.home_score > m.away_score }">
-                                                <span class="team-name" :title="m.home_team_name_cn || m.home_team_name">{{ m.home_team_name_cn || m.home_team_name }}</span>
-                                                <img v-if="m.home_team_logo" :src="m.home_team_logo" class="team-crest" alt="" loading="lazy">
-                                            </div>
-
-                                            <!-- Scoreboard Pill -->
-                                            <div class="score-display-box" :class="{ 'live-score': m.status === 'LIVE' || m.status === 'IN_PLAY' || m.status === 'PAUSED' }">
-                                                <span v-if="m.status !== 'SCHEDULED' && m.status !== 'TIMED'">
-                                                    {{ m.home_score }} - {{ m.away_score }}
-                                                </span>
-                                                <span v-else class="vs-label">VS</span>
-                                            </div>
-
-                                            <!-- Away Team -->
-                                            <div class="team-unit team-away" :class="{ winner: m.status === 'FINISHED' && m.away_score > m.home_score }">
-                                                <img v-if="m.away_team_logo" :src="m.away_team_logo" class="team-crest" alt="" loading="lazy">
-                                                <span class="team-name" :title="m.away_team_name_cn || m.away_team_name">{{ m.away_team_name_cn || m.away_team_name }}</span>
-                                            </div>
+                                    <div class="m-teams">
+                                        <div class="m-team home">
+                                            <span>{{ m.home_team_name_cn || m.home_team_name }}</span>
+                                            <img v-if="m.home_team_logo" :src="m.home_team_logo" class="team-logo"
+                                                alt="">
                                         </div>
-
-                                        <!-- Opta AI Win Probability Full-Width Spectrum (Brand Signature 1) -->
-                                        <div v-if="m.prediction" class="opta-spectrum-bar" :title="m.prediction.prediction_data">
-                                            <div class="spectrum-legend-row">
-                                                <div class="opta-label-home">
-                                                    <span class="legend-dot home-dot"></span>
-                                                    <span>主胜 {{ m.prediction.home_prob }}%</span>
-                                                </div>
-                                                <div class="opta-label-draw">
-                                                    <span class="legend-dot draw-dot"></span>
-                                                    <span>平 {{ m.prediction.draw_prob }}%</span>
-                                                </div>
-                                                <div class="opta-label-away">
-                                                    <span>客胜 {{ m.prediction.away_prob }}%</span>
-                                                    <span class="legend-dot away-dot"></span>
-                                                </div>
-                                            </div>
-                                            <!-- Tri-Color Meter Track -->
-                                            <div class="spectrum-track-rail">
-                                                <div class="seg seg-home" :style="{ width: m.prediction.home_prob + '%' }"></div>
-                                                <div class="seg seg-draw" :style="{ width: m.prediction.draw_prob + '%' }"></div>
-                                                <div class="seg seg-away" :style="{ width: m.prediction.away_prob + '%' }"></div>
-                                            </div>
+                                        <div class="m-score"
+                                            :class="{ 'live': m.status === 'LIVE' || m.status === 'IN_PLAY' || m.status === 'PAUSED' }">
+                                            <span v-if="m.status !== 'SCHEDULED' && m.status !== 'TIMED'">
+                                                {{ m.home_score }} - {{ m.away_score }}
+                                            </span>
+                                            <span v-else>VS</span>
+                                        </div>
+                                        <div class="m-team away">
+                                            <img v-if="m.away_team_logo" :src="m.away_team_logo" class="team-logo"
+                                                alt="">
+                                            <span>{{ m.away_team_name_cn || m.away_team_name }}</span>
                                         </div>
                                     </div>
-
-                                    <!-- Status Badge Cell -->
-                                    <div class="match-status-cell">
-                                        <span class="status-badge" :class="{
-                                            'badge-live': m.status === 'LIVE' || m.status === 'IN_PLAY' || m.status === 'PAUSED',
-                                            'badge-finished': m.status === 'FINISHED',
-                                            'badge-scheduled': m.status === 'SCHEDULED' || m.status === 'TIMED'
-                                        }">
-                                            <span v-if="m.status === 'LIVE' || m.status === 'IN_PLAY' || m.status === 'PAUSED'" class="live-dot-pulse"></span>
+                                    <div class="m-status">
+                                        <span class="badge" :class="{
+                                                'live': m.status === 'LIVE' || m.status === 'IN_PLAY' || m.status === 'PAUSED',
+                                                'finished': m.status === 'FINISHED',
+                                                'scheduled': m.status === 'SCHEDULED' || m.status === 'TIMED'
+                                            }">
                                             {{ getStatusText(m.status) }}
                                         </span>
-                                        <div class="action-hint">
-                                            <span>详情</span>
-                                            <i class="ph-bold ph-caret-right"></i>
+                                        <!-- Opta AI Win Probability Compact Pill -->
+                                        <div v-if="m.prediction" style="margin-top:5px; display:flex; flex-direction:column; align-items:flex-end; gap:3px;">
+                                            <div style="font-size:10px; font-weight:700; color:#38bdf8; display:flex; align-items:center; gap:3px; font-family:var(--font-mono);">
+                                                <i class="ph-fill ph-brain" style="font-size:11px;"></i>
+                                                <span>{{ m.prediction.home_prob }}% / {{ m.prediction.away_prob }}%</span>
+                                            </div>
+                                            <div style="display:flex; width:72px; height:3px; border-radius:2px; overflow:hidden; background:rgba(255,255,255,0.1);" :title="'主胜 ' + m.prediction.home_prob + '% | 平 ' + m.prediction.draw_prob + '% | 客胜 ' + m.prediction.away_prob + '%'">
+                                                <div :style="{ width: m.prediction.home_prob + '%', background: '#38bdf8' }"></div>
+                                                <div :style="{ width: m.prediction.draw_prob + '%', background: '#94a3b8' }"></div>
+                                                <div :style="{ width: m.prediction.away_prob + '%', background: '#f43f5e' }"></div>
+                                            </div>
                                         </div>
                                     </div>
                                 </template>
 
-                                <!-- Sporttery Source View (Kept for compatibility) -->
+                                <!-- Sporttery Structure -->
                                 <template v-else>
-                                    <div class="match-time-cell">
-                                        <div class="match-code-tag">{{ m.match_code }}</div>
-                                        <div class="time-primary">{{ formatTime(m.match_time) }}</div>
+                                    <div class="m-time">
+                                        <div style="font-size:12px; font-weight:600; color:var(--primary);">{{
+                                            m.match_code }}</div>
+                                        <div>{{ formatTime(m.match_time) }}</div>
+                                        <div style="font-size:10px; opacity:0.6;">{{ formatDate(m.match_time) }}</div>
                                     </div>
-                                    <div class="match-core-cell">
-                                        <div class="teams-versus-grid">
-                                            <div class="team-unit team-home">
-                                                <span class="team-name">{{ m.home_team }}</span>
-                                            </div>
-                                            <div class="score-display-box">
-                                                <span>{{ m.actual_score || 'VS' }}</span>
-                                            </div>
-                                            <div class="team-unit team-away">
-                                                <span class="team-name">{{ m.away_team }}</span>
-                                            </div>
+                                    <div class="m-teams">
+                                        <div class="m-team home">
+                                            <span>{{ m.home_team }}</span>
+                                        </div>
+                                        <div class="m-score">
+                                            <span>{{ m.actual_score || 'VS' }}</span>
+                                        </div>
+                                        <div class="m-team away">
+                                            <span>{{ m.away_team }}</span>
                                         </div>
                                     </div>
-                                    <div class="match-status-cell">
-                                        <span class="status-badge" :class="{ 'badge-finished': m.status === 'finished', 'badge-scheduled': m.status === 'pending' }">
-                                            {{ getStatusText(m.status) }}
-                                        </span>
+                                    <div class="m-status">
+                                        <div
+                                            style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+                                            <span class="badge"
+                                                :class="{ 'finished': m.status === 'finished', 'scheduled': m.status === 'pending' }">
+                                                {{ getStatusText(m.status) }}
+                                            </span>
+                                            <span v-if="m.prediction" class="badge"
+                                                style="background:rgba(181,134,58,0.12); color:var(--gold); border:1px solid rgba(181,134,58,0.3); font-size:10px;">
+                                                <i class="ph-fill ph-brain" style="margin-right:2px;"></i> AI情报
+                                            </span>
+                                        </div>
                                     </div>
                                 </template>
                             </div>
                         </div>
-                    </section>
+                    </div>
 
-                    <!-- Right Section: Standings & Scorers & Telemetry Logs -->
-                    <aside class="panel-section side-panel">
-                        <!-- League Tables Card (FD Mode) -->
-                        <div class="panel-card-box" v-if="activeSource === 'fd'">
-                            <div class="card-header-bar">
-                                <div class="card-header-title">
-                                    <i class="ph-bold ph-trophy"></i>
-                                    <span>{{ activeTab === 'standings' ? '联赛积分榜' : (activeTab === 'scorers' ? '射手榜' : '助攻榜') }}</span>
-                                    <span class="league-sub-badge">({{ leagues.find(l => l.code === activeLeague)?.name || '英超' }})</span>
-                                </div>
-                                
-                                <div class="segmented-control mini-segmented">
-                                    <button class="seg-btn" :class="{ active: activeTab === 'standings' }"
+                    <!-- Right Column -->
+                    <div class="side-panel" style="display:flex; flex-direction:column; gap:24px;">
+
+                        <!-- Standings / Scorers (Only FD) -->
+                        <div class="card" v-if="activeSource === 'fd'" style="flex:1;">
+                            <div class="card-title" style="margin-bottom:10px;">
+                                <span>{{ activeTab === 'standings' ? '积分榜' : (activeTab === 'scorers' ? '射手榜' : '助攻榜')
+                                    }} ({{ leagues.find(l => l.code ===
+                                    activeLeague)?.name }})</span>
+                                <div class="tab-group" style="margin:0;">
+                                    <button class="tab-btn" :class="{ active: activeTab === 'standings' }"
                                         @click="activeTab = 'standings'">积分</button>
-                                    <button class="seg-btn" :class="{ active: activeTab === 'scorers' }"
+                                    <button class="tab-btn" :class="{ active: activeTab === 'scorers' }"
                                         @click="activeTab = 'scorers'">射手</button>
-                                    <button class="seg-btn" :class="{ active: activeTab === 'assists' }"
+                                    <button class="tab-btn" :class="{ active: activeTab === 'assists' }"
                                         @click="activeTab = 'assists'">助攻</button>
                                 </div>
                             </div>
 
-                            <div class="table-scroll-container">
-                                <!-- Standings Table -->
-                                <table v-if="activeTab === 'standings'" class="terminal-table standings-table">
+                            <div style="overflow-y:auto; max-height:400px;">
+                                <table v-if="activeTab === 'standings'">
                                     <thead>
                                         <tr>
-                                            <th class="th-rank">#</th>
-                                            <th class="th-team">球队</th>
-                                            <th class="th-stat">场</th>
-                                            <th class="th-stat">净</th>
-                                            <th class="th-pts">分</th>
+                                            <th>#</th>
+                                            <th>球队</th>
+                                            <th>场</th>
+                                            <th>分</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr v-if="standings.length === 0">
-                                            <td colspan="5" class="table-empty-cell">
+                                            <td colspan="4" style="text-align:center; padding:20px; color:var(--text-dim);">
                                                 {{ loading ? '正在加载积分数据...' : '当前筛选条件下暂无积分数据' }}
                                             </td>
                                         </tr>
-                                        <tr v-for="s in standings" :key="s.team_id || s.position" :class="{ 'top-ucl': s.position <= 4, 'relegation': s.position >= 18 }">
-                                            <td class="td-rank">
-                                                <div class="rank-badge" :class="{ 'rank-champions': s.position <= 4, 'rank-europa': s.position === 5 || s.position === 6 }">
+                                        <tr v-for="s in standings" :key="s.team_id">
+                                            <td>
+                                                <div class="rank-num"
+                                                    :style="{ background: s.position <= 4 ? 'var(--primary)' : '' }">
                                                     {{ s.position }}
                                                 </div>
                                             </td>
-                                            <td class="td-team" :title="s.team_name_cn || s.team_name">
-                                                <span class="table-team-name">{{ s.team_name_cn || s.team_name }}</span>
-                                            </td>
-                                            <td class="td-stat font-mono">{{ s.played_games }}</td>
-                                            <td class="td-stat font-mono" :class="{ 'text-positive': s.goal_diff > 0, 'text-negative': s.goal_diff < 0 }">
-                                                {{ s.goal_diff > 0 ? '+' + s.goal_diff : (s.goal_diff || 0) }}
-                                            </td>
-                                            <td class="td-pts font-mono">{{ s.points }}</td>
+                                            <td>{{ s.team_name_cn || s.team_name }}</td>
+                                            <td>{{ s.played_games }}</td>
+                                            <td style="font-weight:700;">{{ s.points }}</td>
                                         </tr>
                                     </tbody>
                                 </table>
 
-                                <!-- Scorers / Assists Table -->
-                                <table v-else class="terminal-table scorers-table">
+                                <table v-else>
                                     <thead>
                                         <tr>
-                                            <th class="th-rank">#</th>
-                                            <th class="th-player">球员</th>
-                                            <th class="th-team">球队</th>
-                                            <th class="th-stat text-right">{{ activeTab === 'assists' ? '助/球' : '球/助' }}</th>
+                                            <th>#</th>
+                                            <th>球员</th>
+                                            <th>球队</th>
+                                            <th>{{ activeTab === 'assists' ? '助 / 球' : '球 / 助' }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr v-for="(s, index) in scorers" :key="index">
-                                            <td class="td-rank">
-                                                <span class="rank-plain">{{ index + 1 }}</span>
-                                            </td>
-                                            <td class="td-player" :title="s.player_name">
-                                                <span class="table-player-name">{{ s.player_name }}</span>
-                                            </td>
-                                            <td class="td-team-sub" :title="s.team_name_cn || s.team_name">
-                                                {{ s.team_name_cn || s.team_name }}
-                                            </td>
-                                            <td class="td-stat font-mono text-right">
+                                            <td style="color:var(--text-dim);">{{ index + 1 }}</td>
+                                            <td style="font-weight:500;">{{ s.player_name }}</td>
+                                            <td style="font-size:12px; color:var(--text-muted);">{{ s.team_name_cn ||
+                                                s.team_name }}</td>
+                                            <td style="font-weight:700; color:var(--accent);">
                                                 <template v-if="activeTab === 'assists'">
-                                                    <span class="stat-highlight">{{ s.assists || 0 }}</span>
-                                                    <span class="stat-slash">/</span>
-                                                    <span class="stat-secondary">{{ s.goals }}</span>
+                                                    {{ s.assists || 0 }} / <span
+                                                        style="font-weight:400; color:var(--text-muted); font-size:12px;">{{
+                                                        s.goals }}</span>
                                                 </template>
                                                 <template v-else>
-                                                    <span class="stat-highlight">{{ s.goals }}</span>
-                                                    <span class="stat-slash">/</span>
-                                                    <span class="stat-secondary">{{ s.assists || 0 }}</span>
+                                                    {{ s.goals }} / <span
+                                                        style="font-weight:400; color:var(--text-muted); font-size:12px;">{{
+                                                        s.assists || 0 }}</span>
                                                 </template>
                                             </td>
                                         </tr>
                                     </tbody>
                                 </table>
 
-                                <div v-if="activeTab !== 'standings' && scorers.length === 0" class="table-empty-box">
+                                <div v-if="activeTab !== 'standings' && scorers.length === 0"
+                                    style="padding:20px; text-align:center; color:var(--text-dim); font-size:12px;">
                                     {{ loading ? '正在加载榜单数据...' : (activeTab === 'assists' ? '暂无助攻榜数据' : '暂无射手榜数据') }}
                                 </div>
                             </div>
                         </div>
 
-                        <!-- System Sync Telemetry Logs Card -->
-                        <div class="panel-card-box logs-card-box">
-                            <div class="card-header-bar">
-                                <div class="card-header-title">
-                                    <i class="ph-bold ph-terminal-window"></i>
-                                    <span>系统同步日志流</span>
-                                </div>
-                                <span class="log-count-badge font-mono">{{ logs.length }} ENTRIES</span>
-                            </div>
-
-                            <div class="logs-feed-container">
-                                <div v-for="log in logs" :key="log.id || log.started_at" class="terminal-log-row">
-                                    <div class="log-left">
-                                        <span class="log-badge" :class="{'log-ok': log.status === 'success', 'log-err': log.status !== 'success'}">
-                                            {{ log.status === 'success' ? 'OK' : 'ERR' }}
+                        <!-- System Logs -->
+                        <div class="card" style="flex:1; max-height:400px;">
+                            <div class="card-title">系统同步日志</div>
+                            <div class="logs-container">
+                                <div v-for="log in logs" class="log-entry">
+                                    <div>
+                                        <span
+                                            :class="{'log-status success': log.status === 'success', 'log-status error': log.status !== 'success'}">
+                                            [{{ log.status === 'success' ? '正常' : '异常' }}]
                                         </span>
-                                        <span class="log-channel font-mono">{{ log.source }}/{{ log.task_type }}</span>
+                                        {{ log.source }} / {{ log.task_type }}
                                     </div>
-                                    <span class="log-timestamp font-mono">{{ log.started_at ? formatTime(log.started_at) : '-' }}</span>
+                                    <div style="opacity:0.5;">{{ log.started_at ? formatTime(log.started_at) : '' }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </aside>
-                </div>
-            </div>
 
-            <!-- Match Details Modal Dialog -->
-            <div class="modal-overlay" :class="{ active: showModal }" @click.self="closeModal" role="dialog" aria-modal="true">
-                <div class="modal-card" v-if="activeMatchDetail">
-                    <!-- Modal Header -->
-                    <div class="modal-header">
-                        <div class="modal-title-left">
-                            <div class="modal-icon-badge">
-                                <i class="ph-bold ph-soccer-ball"></i>
-                            </div>
-                            <div class="modal-title-text">
-                                <h3>赛事深度情报分析</h3>
-                                <span class="modal-match-date">{{ formatDateTime(activeMatchDetail.match_date) }}</span>
-                            </div>
-                        </div>
-                        <button class="modal-close-btn" @click="closeModal" aria-label="关闭弹窗">
-                            <i class="ph-bold ph-x"></i>
-                        </button>
                     </div>
-
-                    <!-- Modal Scoreboard Banner -->
-                    <div class="modal-scoreboard-banner">
-                        <div class="modal-team home">
-                            <h2 class="team-title">{{ activeMatchDetail.home_team_name }}</h2>
-                            <span class="lineup-ready-badge" v-if="activeMatchDetail.lineup_home && activeMatchDetail.lineup_home.length > 0">
-                                <i class="ph-bold ph-check-circle"></i> 已公布首发
-                            </span>
-                        </div>
-
-                        <div class="modal-score-center">
-                            <div class="modal-score-number font-mono">
-                                <span v-if="activeMatchDetail.status !== 'SCHEDULED' && activeMatchDetail.status !== 'TIMED'">
-                                    {{ activeMatchDetail.home_score }} - {{ activeMatchDetail.away_score }}
-                                </span>
-                                <span v-else class="vs-text">VS</span>
-                            </div>
-                            <div class="modal-status-badge">
-                                <span class="status-badge" :class="{
-                                    'badge-live': activeMatchDetail.status === 'LIVE' || activeMatchDetail.status === 'IN_PLAY' || activeMatchDetail.status === 'PAUSED',
-                                    'badge-finished': activeMatchDetail.status === 'FINISHED',
-                                    'badge-scheduled': activeMatchDetail.status === 'SCHEDULED' || activeMatchDetail.status === 'TIMED'
-                                }">
-                                    <span v-if="activeMatchDetail.status === 'LIVE' || activeMatchDetail.status === 'IN_PLAY' || activeMatchDetail.status === 'PAUSED'" class="live-dot-pulse"></span>
-                                    {{ getStatusText(activeMatchDetail.status) }}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="modal-team away">
-                            <h2 class="team-title">{{ activeMatchDetail.away_team_name }}</h2>
-                            <span class="lineup-ready-badge" v-if="activeMatchDetail.lineup_away && activeMatchDetail.lineup_away.length > 0">
-                                <i class="ph-bold ph-check-circle"></i> 已公布首发
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- Modal Scrollable Body -->
-                    <div class="modal-body">
-                        <!-- Opta AI Win Probability Quant Compass Card -->
-                        <div v-if="activeMatchDetail.prediction" class="opta-quant-card">
-                            <div class="quant-card-header">
-                                <div class="quant-header-title">
-                                    <i class="ph-fill ph-brain"></i>
-                                    <h4>Opta AI 实时胜率模型与深度投影</h4>
+                    <!-- Match Details Modal -->
+                    <div class="modal-overlay" :class="{ active: showModal }" @click.self="closeModal">
+                        <div class="modal-content" v-if="activeMatchDetail">
+                            <div class="modal-header">
+                                <div style="font-weight:600; font-size:16px;">
+                                    <i class="ph-fill ph-soccer-ball"
+                                        style="color:var(--primary); margin-right:8px;"></i>
+                                    比赛详情
+                                    <span style="font-weight:400; opacity:0.5; font-size:12px; margin-left:10px;">{{
+                                        formatDateTime(activeMatchDetail.match_date) }}</span>
                                 </div>
-                                <span class="quant-model-tag">MONTE CARLO PROJECTION</span>
+                                <button class="modal-close" @click="closeModal"><i class="ph ph-x"></i></button>
                             </div>
 
-                            <!-- 3 Progress Rails -->
-                            <div class="quant-gauge-grid">
-                                <div class="quant-track-item">
-                                    <div class="quant-meta-row">
-                                        <span class="quant-label home-color">主胜概率 ({{ activeMatchDetail.home_team_name }})</span>
-                                        <span class="quant-pct font-mono home-color">{{ activeMatchDetail.prediction.home_prob }}%</span>
-                                    </div>
-                                    <div class="quant-progress-bg">
-                                        <div class="quant-progress-bar bar-home" :style="{ width: activeMatchDetail.prediction.home_prob + '%' }"></div>
-                                    </div>
+                            <!-- Scoreboard -->
+                            <div class="modal-scoreboard">
+                                <div class="score-team">
+                                    <h3>{{ activeMatchDetail.home_team_name }}</h3>
+                                    <span class="match-meta-badge"
+                                        v-if="activeMatchDetail.lineup_home.length > 0">已公布首发</span>
                                 </div>
-
-                                <div class="quant-track-item">
-                                    <div class="quant-meta-row">
-                                        <span class="quant-label draw-color">平局概率</span>
-                                        <span class="quant-pct font-mono draw-color">{{ activeMatchDetail.prediction.draw_prob }}%</span>
-                                    </div>
-                                    <div class="quant-progress-bg">
-                                        <div class="quant-progress-bar bar-draw" :style="{ width: activeMatchDetail.prediction.draw_prob + '%' }"></div>
-                                    </div>
-                                </div>
-
-                                <div class="quant-track-item">
-                                    <div class="quant-meta-row">
-                                        <span class="quant-label away-color">客胜概率 ({{ activeMatchDetail.away_team_name }})</span>
-                                        <span class="quant-pct font-mono away-color">{{ activeMatchDetail.prediction.away_prob }}%</span>
-                                    </div>
-                                    <div class="quant-progress-bg">
-                                        <div class="quant-progress-bar bar-away" :style="{ width: activeMatchDetail.prediction.away_prob + '%' }"></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="quant-narrative-box">
-                                <div class="narrative-content font-mono">
-                                    {{ activeMatchDetail.prediction.prediction_data }}
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Match Goals Timeline -->
-                        <div class="timeline-box" v-if="activeMatchDetail.goals && activeMatchDetail.goals.length > 0">
-                            <div class="section-micro-title">
-                                <i class="ph-bold ph-shooting-star"></i>
-                                <span>进球事件时间轴</span>
-                            </div>
-                            <div class="goals-stream">
-                                <div v-for="g in activeMatchDetail.goals" :key="g.minute + g.player_name" class="goal-item-row">
-                                    <div class="goal-minute-badge font-mono">{{ formatGoalTime(g) }}</div>
-                                    <div class="goal-player-info">
-                                        <i class="ph-fill ph-soccer-ball goal-icon"></i>
-                                        <span class="goal-player-name" :class="{ 'text-home': g.home_away === 'home', 'text-away': g.home_away !== 'home' }">
-                                            {{ g.player_name }}
+                                <div style="text-align:center;">
+                                    <div class="score-main">
+                                        <span
+                                            v-if="activeMatchDetail.status !== 'SCHEDULED' && activeMatchDetail.status !== 'TIMED'">
+                                            {{ activeMatchDetail.home_score }} - {{ activeMatchDetail.away_score }}
                                         </span>
-                                        <span class="goal-team-label">({{ g.team_name }})</span>
-                                        <span class="goal-extra-type" v-if="getGoalTypeBadge(g.type)">{{ getGoalTypeBadge(g.type) }}</span>
+                                        <span v-else>VS</span>
+                                    </div>
+                                    <div style="margin-top:10px;">
+                                        <span class="badge" :class="{
+                                'live': activeMatchDetail.status === 'LIVE' || activeMatchDetail.status === 'IN_PLAY' || activeMatchDetail.status === 'PAUSED',
+                                'finished': activeMatchDetail.status === 'FINISHED',
+                                'scheduled': activeMatchDetail.status === 'SCHEDULED' || activeMatchDetail.status === 'TIMED'
+                            }">{{ getStatusText(activeMatchDetail.status) }}</span>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Empty goals hint -->
-                        <div class="empty-goals-notice" v-if="(!activeMatchDetail.goals || activeMatchDetail.goals.length === 0) && (activeMatchDetail.status === 'FINISHED' || activeMatchDetail.status === 'IN_PLAY')">
-                            <span>本场暂未产生进球记录</span>
-                        </div>
-
-                        <!-- Lineups and Tactical Formations -->
-                        <div class="lineups-section" v-if="activeMatchDetail.lineup_home && activeMatchDetail.lineup_home.length > 0">
-                            <div class="section-micro-title">
-                                <i class="ph-bold ph-users-three"></i>
-                                <span>双方首发名单与替补阵容</span>
+                                <div class="score-team">
+                                    <h3>{{ activeMatchDetail.away_team_name }}</h3>
+                                    <span class="match-meta-badge"
+                                        v-if="activeMatchDetail.lineup_away && activeMatchDetail.lineup_away.length > 0">已公布首发</span>
+                                </div>
                             </div>
 
-                            <div class="lineups-dual-grid">
-                                <!-- Home Column -->
-                                <div class="lineup-squad-panel">
-                                    <div class="squad-header">
-                                        <span class="squad-title">{{ activeMatchDetail.home_team_name }} 首发阵容</span>
-                                        <span class="coach-badge" v-if="activeMatchDetail.home_coach_name">主帅: {{ activeMatchDetail.home_coach_name }}</span>
+                            <div class="modal-body">
+                                <!-- Prediction Section (Top priority if exists) -->
+                                <div v-if="activeMatchDetail.prediction" class="card"
+                                    style="margin-bottom:20px; border:1px solid rgba(15,92,64,0.3); background:var(--paper-soft);">
+                                    <div
+                                        style="display:flex; align-items:center; gap:8px; margin-bottom:12px; color:var(--pine);">
+                                        <i class="ph-fill ph-brain" style="font-size:20px;"></i>
+                                        <h4 style="margin:0; font-family:var(--font-disp); font-size:16px;">Grok AI 深度情报分析</h4>
                                     </div>
-                                    <div class="player-roster">
-                                        <div v-for="p in activeMatchDetail.lineup_home" :key="p.shirtNumber + p.name" class="player-entry-row">
-                                            <span class="jersey-num font-mono">{{ p.shirtNumber || '-' }}</span>
+                                    <div
+                                        style="font-size:14px; line-height:1.6; white-space: pre-wrap; color:var(--text-main);">
+                                        {{ activeMatchDetail.prediction.prediction_data }}
+                                    </div>
+                                </div>
+                                <!-- Timeline / Goals -->
+                                <div class="timeline-section"
+                                    v-if="activeMatchDetail.goals && activeMatchDetail.goals.length > 0">
+                                    <h4 style="margin-top:0;">进球事件</h4>
+                                    <div v-for="g in activeMatchDetail.goals" :key="g.minute + g.player_name"
+                                        class="goal-event">
+                                        <div class="goal-time">{{ formatGoalTime(g) }}</div>
+                                        <div style="display:flex; align-items:center; gap:8px;">
+                                            <i class="ph-fill ph-soccer-ball" style="color:var(--accent);"></i>
+                                            <span
+                                                :style="{ fontWeight: 'bold', color: g.home_away === 'home' ? 'var(--primary)' : 'var(--warning)' }">
+                                                {{ g.player_name }}
+                                            </span>
+                                            <span style="opacity:0.6; font-size:12px;">({{ g.team_name }})</span>
+                                            <span style="font-size:12px; color:var(--text-dim);">{{
+                                                getGoalTypeBadge(g.type) }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style="text-align:center; padding:40px; color:var(--text-dim);"
+                                    v-if="(!activeMatchDetail.goals || activeMatchDetail.goals.length === 0) && (activeMatchDetail.status === 'FINISHED' || activeMatchDetail.status === 'IN_PLAY')">
+                                    暂无进球记录
+                                </div>
+
+                                <!-- Lineups -->
+                                <div class="details-grid" v-if="activeMatchDetail.lineup_home.length > 0">
+                                    <!-- Home -->
+                                    <div class="lineup-col">
+                                        <h4>{{ activeMatchDetail.home_team_name }} 首发 ({{
+                                            activeMatchDetail.home_coach_name || '主教练未知' }})</h4>
+                                        <div v-for="p in activeMatchDetail.lineup_home" class="player-row">
+                                            <span class="player-num">{{ p.shirtNumber }}</span>
                                             <span class="player-name">{{ p.name }}</span>
-                                            <span class="tactical-pos" :class="'pos-' + (p.position || 'DEF').toLowerCase()">{{ p.position || 'DF' }}</span>
+                                            <span class="player-pos">{{ p.position }}</span>
                                         </div>
-                                    </div>
 
-                                    <!-- Home Bench -->
-                                    <div class="bench-sub-section" v-if="activeMatchDetail.bench_home && activeMatchDetail.bench_home.length > 0">
-                                        <div class="bench-header-title">替补席</div>
-                                        <div class="player-roster bench-roster">
-                                            <div v-for="p in activeMatchDetail.bench_home" :key="'bench-' + p.shirtNumber + p.name" class="player-entry-row">
-                                                <span class="jersey-num font-mono">{{ p.shirtNumber || '-' }}</span>
-                                                <span class="player-name">{{ p.name }}</span>
-                                                <span class="tactical-pos">{{ p.position || 'SUB' }}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Away Column -->
-                                <div class="lineup-squad-panel">
-                                    <div class="squad-header">
-                                        <span class="squad-title">{{ activeMatchDetail.away_team_name }} 首发阵容</span>
-                                        <span class="coach-badge" v-if="activeMatchDetail.away_coach_name">主帅: {{ activeMatchDetail.away_coach_name }}</span>
-                                    </div>
-                                    <div class="player-roster">
-                                        <div v-for="p in activeMatchDetail.lineup_away" :key="p.shirtNumber + p.name" class="player-entry-row">
-                                            <span class="jersey-num font-mono">{{ p.shirtNumber || '-' }}</span>
+                                        <h4 style="margin-top:30px;">替补</h4>
+                                        <div v-for="p in activeMatchDetail.bench_home" class="player-row">
+                                            <span class="player-num">{{ p.shirtNumber }}</span>
                                             <span class="player-name">{{ p.name }}</span>
-                                            <span class="tactical-pos" :class="'pos-' + (p.position || 'DEF').toLowerCase()">{{ p.position || 'DF' }}</span>
+                                            <span class="player-pos">{{ p.position }}</span>
                                         </div>
                                     </div>
 
-                                    <!-- Away Bench -->
-                                    <div class="bench-sub-section" v-if="activeMatchDetail.bench_away && activeMatchDetail.bench_away.length > 0">
-                                        <div class="bench-header-title">替补席</div>
-                                        <div class="player-roster bench-roster">
-                                            <div v-for="p in activeMatchDetail.bench_away" :key="'bench-' + p.shirtNumber + p.name" class="player-entry-row">
-                                                <span class="jersey-num font-mono">{{ p.shirtNumber || '-' }}</span>
-                                                <span class="player-name">{{ p.name }}</span>
-                                                <span class="tactical-pos">{{ p.position || 'SUB' }}</span>
-                                            </div>
+                                    <!-- Away -->
+                                    <div class="lineup-col">
+                                        <h4>{{ activeMatchDetail.away_team_name }} 首发 ({{
+                                            activeMatchDetail.away_coach_name || '主教练未知' }})</h4>
+                                        <div v-for="p in activeMatchDetail.lineup_away" class="player-row">
+                                            <span class="player-num">{{ p.shirtNumber }}</span>
+                                            <span class="player-name">{{ p.name }}</span>
+                                            <span class="player-pos">{{ p.position }}</span>
+                                        </div>
+
+                                        <h4 style="margin-top:30px;">替补</h4>
+                                        <div v-for="p in activeMatchDetail.bench_away" class="player-row">
+                                            <span class="player-num">{{ p.shirtNumber }}</span>
+                                            <span class="player-name">{{ p.name }}</span>
+                                            <span class="player-pos">{{ p.position }}</span>
                                         </div>
                                     </div>
                                 </div>
+
+                                <div v-else-if="activeMatchDetail.status === 'SCHEDULED' || activeMatchDetail.status === 'TIMED'"
+                                    style="text-align:center; padding:40px; color:var(--text-dim);">
+                                    <i class="ph ph-users" style="font-size:32px; margin-bottom:10px;"></i><br>
+                                    首发名单尚未公布
+                                </div>
+
+                                <!-- JSON Toggle -->
+                                <div class="raw-json-toggle">
+                                    <button class="btn" @click="showRawJson = !showRawJson"
+                                        style="width:100%; justify-content:center; opacity:0.7;">
+                                        <i class="ph ph-code"></i> {{ showRawJson ? '收起' : '查看' }} API 原始数据
+                                    </button>
+                                    <div class="raw-json" v-if="showRawJson">
+                                        {{ JSON.stringify(activeMatchDetail, null, 2) }}
+                                    </div>
+                                </div>
+
                             </div>
-                        </div>
-
-                        <!-- Scheduled Lineup Not Announced Notice -->
-                        <div v-else-if="activeMatchDetail.status === 'SCHEDULED' || activeMatchDetail.status === 'TIMED'" class="lineup-pending-box">
-                            <i class="ph ph-shield-warning"></i>
-                            <h4>首发阵容尚未公布</h4>
-                            <p>通常在开赛前 45~60 分钟官方确认后自动刷新同步</p>
-                        </div>
-
-                        <!-- Raw JSON Data Toggle -->
-                        <div class="raw-data-panel">
-                            <button class="btn btn-secondary btn-raw-toggle" @click="showRawJson = !showRawJson">
-                                <i class="ph-bold ph-code"></i>
-                                <span>{{ showRawJson ? '折叠原始 API 报文' : '展开原始 API 报文 (REST JSON)' }}</span>
-                            </button>
-                            <pre class="raw-json-inspector font-mono" v-if="showRawJson">{{ JSON.stringify(activeMatchDetail, null, 2) }}</pre>
                         </div>
                     </div>
                 </div>
@@ -653,7 +484,6 @@
         </main>
     </div>
 
-    <!-- Main Logic -->
     <script src="/static/app.js"></script>
 </body>
 
