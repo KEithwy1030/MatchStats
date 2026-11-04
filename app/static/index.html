@@ -53,6 +53,10 @@
 
                 <!-- 顶栏右侧动作 -->
                 <div class="top-actions">
+                    <a href="/matchstats/briefing.html" target="_blank" class="btn-briefing" title="查看主播/分析师专享 Opta AI 赛前战报卡">
+                        <i class="ph-bold ph-newspaper-clipping"></i>
+                        <span>MatchBrief 战报</span>
+                    </a>
                     <div class="sync-pill" :title="'最后同步: ' + formatDateTime(stats.last_sync)">
                         <div class="sync-dot" :class="{ error: stats.sync_status === 'error' }"></div>
                         <span>{{ stats.sync_status === 'error' ? '数据同步异常' : '数据通道活跃' }}</span>

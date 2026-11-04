@@ -203,6 +203,30 @@ a {
   box-shadow: 0 0 6px var(--live-red);
 }
 
+.btn-briefing {
+  background: rgba(212, 163, 75, 0.16);
+  border: 1px solid var(--border-accent);
+  color: var(--opta-gold-light);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  transition: all var(--motion-fast);
+  white-space: nowrap;
+}
+
+.btn-briefing:hover {
+  background: var(--opta-gold);
+  color: #09100d;
+  box-shadow: 0 2px 8px rgba(212, 163, 75, 0.3);
+}
+
 .btn-refresh {
   background: var(--opta-gold-bg);
   border: 1px solid var(--border-accent);
