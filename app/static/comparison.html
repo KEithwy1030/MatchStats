@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MatchStats 视觉校准门 (Visual Calibration)</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #060a08;
+            color: #d1dbd6;
+            padding: 24px;
+        }
+        .header {
+            max-width: 1400px;
+            margin: 0 auto 24px auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 16px;
+        }
+        .title { font-size: 20px; font-weight: 700; color: #fff; }
+        .sub { font-size: 13px; color: #889990; margin-top: 4px; }
+        .tabs { display: flex; gap: 8px; }
+        .tab-btn {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #ccc;
+            padding: 8px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .tab-btn:hover, .tab-btn.active {
+            background: #1f9457;
+            color: #fff;
+            border-color: #1f9457;
+        }
+        .grid-compare {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        .card-plan {
+            background: #101a15;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .plan-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #f5f4ef;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .plan-tag {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        .plan-tag.a { background: rgba(212, 163, 75, 0.15); color: #d4a34b; border: 1px solid rgba(212, 163, 75, 0.3); }
+        .plan-tag.b { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .preview-frame {
+            width: 100%;
+            height: 640px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 6px;
+            background: #000;
+        }
+        .btn-full {
+            display: inline-block;
+            text-align: center;
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+            padding: 8px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-full:hover { background: rgba(255,255,255,0.16); }
+        @media (max-width: 900px) {
+            .grid-compare { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div>
+            <div class="title">MatchStats 前端视觉校准门 (Step 20 Calibration)</div>
+            <div class="sub">遵循《K-design_SKILL.md》全新规则，两个截然不同但皆具备高级质感的方案对照</div>
+        </div>
+        <div class="tabs">
+            <a href="/static/direction_a.html" class="tab-btn" target="_blank">独立看方向 A</a>
+            <a href="/static/direction_b.html" class="tab-btn" target="_blank">独立看方向 B</a>
+            <a href="/dashboard" class="tab-btn" target="_blank">看基线原版</a>
+        </div>
+    </div>
+
+    <div class="grid-compare">
+        <!-- 方向 A -->
+        <div class="card-plan">
+            <div class="plan-title">
+                <span>方向 A：旗舰体育数据智库风</span>
+                <span class="plan-tag a">Opta Analyst / The Athletic 风格</span>
+            </div>
+            <p style="font-size: 13px; color: #8fa398; line-height: 1.5;">
+                <strong>核心特色</strong>：深邃高贵球场深墨色调、威严克制的英伦出版物风骨、象牙白与 Opta 权威金点睛。Opta AI 概率三段色带全景贯穿卡片底部，突出“切尔西 46.5% 主胜领先”等决策标签。
+            </p>
+            <iframe class="preview-frame" src="/static/direction_a.html"></iframe>
+            <a href="/static/direction_a.html" class="btn-full" target="_blank">在新窗口全屏体验方向 A</a>
+        </div>
+
+        <!-- 方向 B -->
+        <div class="card-plan">
+            <div class="plan-title">
+                <span>方向 B：现代化高密度赛事工作台</span>
+                <span class="plan-tag b">Modern Match Station</span>
+            </div>
+            <p style="font-size: 13px; color: #8fa398; line-height: 1.5;">
+                <strong>核心特色</strong>：极高信息密度、哑光深碳青、电光薄荷绿点睛。比分拥有立体黑匣舱，Opta AI 呈现为精密罗盘仪表动量轨，顶部集成 4 组微型工作台指标。
+            </p>
+            <iframe class="preview-frame" src="/static/direction_b.html"></iframe>
+            <a href="/static/direction_b.html" class="btn-full" target="_blank">在新窗口全屏体验方向 B</a>
+        </div>
+    </div>
+
+</body>
+</html>

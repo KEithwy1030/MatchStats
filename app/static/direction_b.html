@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MatchStats | 方向 B：现代化高密度赛事工作台</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        :root {
+            /* 方向 B：现代化高密度赛事工作台 (Modern High-Density Match Station) */
+            --bg-base: #0b1212;
+            --bg-panel: #111a19;
+            --bg-card: #152220;
+            --bg-card-hover: #192a27;
+            --bg-accent-subtle: rgba(16, 185, 129, 0.08);
+
+            --border-light: rgba(255, 255, 255, 0.07);
+            --border-glow: rgba(16, 185, 129, 0.25);
+            --border-card: rgba(255, 255, 255, 0.1);
+
+            --text-pure: #ffffff;
+            --text-heading: #f1f5f4;
+            --text-secondary: #94a7a3;
+            --text-tertiary: #5e736f;
+
+            --mint-primary: #10b981;
+            --mint-light: #34d399;
+            --amber-accent: #f59e0b;
+            --rose-danger: #f43f5e;
+
+            --font-ui: "Inter", "Noto Sans SC", -apple-system, sans-serif;
+            --font-brand: "Space Grotesk", sans-serif;
+            --font-data: "JetBrains Mono", monospace;
+
+            --radius-xs: 4px;
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-secondary);
+            font-family: var(--font-ui);
+            font-size: 13.5px;
+            line-height: 1.45;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+        }
+
+        /* 紧凑敏捷工作台顶栏 */
+        .station-header {
+            background: rgba(17, 26, 25, 0.94);
+            border-bottom: 1px solid var(--border-light);
+            position: sticky;
+            top: 0;
+            z-index: 60;
+            backdrop-filter: blur(12px);
+        }
+
+        .header-container {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 0 20px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .brand-unit {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .brand-logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #10b981 0%, #064e3b 100%);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 18px;
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .brand-title {
+            font-family: var(--font-brand);
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-pure);
+            letter-spacing: -0.03em;
+        }
+
+        .brand-title span {
+            color: var(--mint-light);
+            font-weight: 500;
+        }
+
+        .platform-badge {
+            font-size: 10.5px;
+            font-weight: 600;
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--mint-light);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            padding: 2px 7px;
+            border-radius: 4px;
+            letter-spacing: 0.02em;
+        }
+
+        /* 敏捷药丸过滤器 */
+        .filter-ribbon {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border-light);
+            padding: 3px;
+            border-radius: var(--radius-sm);
+        }
+
+        .filter-chip {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: var(--radius-xs);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.15s ease;
+        }
+
+        .filter-chip:hover {
+            color: var(--text-heading);
+        }
+
+        .filter-chip.active {
+            background: var(--bg-card);
+            color: var(--text-pure);
+            border: 1px solid var(--border-card);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        .filter-count {
+            font-family: var(--font-data);
+            font-size: 10px;
+            opacity: 0.7;
+        }
+
+        .station-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .telemetry-node {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11.5px;
+            font-family: var(--font-data);
+            color: var(--text-tertiary);
+        }
+
+        .telemetry-node .pulse-gem {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--mint-primary);
+            box-shadow: 0 0 8px var(--mint-primary);
+        }
+
+        .btn-action-ghost {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-light);
+            color: var(--text-heading);
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: var(--radius-xs);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s ease;
+        }
+
+        .btn-action-ghost:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-pure);
+        }
+
+        /* 联赛横切胶囊条 */
+        .sub-deck {
+            background: #0e1615;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .sub-deck-container {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            height: 48px;
+        }
+
+        .sub-deck-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .league-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: var(--radius-xs);
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            background: transparent;
+            border: 1px solid transparent;
+            white-space: nowrap;
+            transition: all 0.15s ease;
+        }
+
+        .league-chip:hover {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-heading);
+        }
+
+        .league-chip.active {
+            background: var(--bg-card);
+            border-color: var(--border-glow);
+            color: var(--mint-light);
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .chip-badge {
+            font-family: var(--font-data);
+            font-size: 9.5px;
+            background: rgba(255, 255, 255, 0.07);
+            padding: 1px 4px;
+            border-radius: 2px;
+            color: var(--text-heading);
+        }
+
+        /* 工作台双栏布局 */
+        .grid-workbench {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 390px;
+            gap: 20px;
+            align-items: start;
+        }
+
+        /* 顶部全局数据概览卡片行 (微型工作台仪表) */
+        .workbench-glance-bar {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .glance-tile {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .glance-label {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+        }
+
+        .glance-val {
+            font-family: var(--font-data);
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-pure);
+        }
+
+        .glance-val.mint {
+            color: var(--mint-light);
+        }
+
+        /* 赛事卡片系统 (Direction B 核心) */
+        .feed-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .match-card-b {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            cursor: pointer;
+        }
+
+        .match-card-b:hover {
+            background: var(--bg-card);
+            border-color: rgba(255, 255, 255, 0.16);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-topline {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .match-time-tag {
+            font-family: var(--font-data);
+            font-size: 11.5px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-live-pulse {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(244, 63, 94, 0.12);
+            color: #fb7185;
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .badge-live-pulse .beacon {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--rose-danger);
+            box-shadow: 0 0 6px var(--rose-danger);
+        }
+
+        .badge-finish {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-tertiary);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        /* 对阵与比分行 */
+        .match-clash {
+            display: grid;
+            grid-template-columns: 1fr 140px 1fr;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .club-side {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .club-side.home {
+            justify-content: flex-end;
+            text-align: right;
+        }
+
+        .club-side.away {
+            justify-content: flex-start;
+            text-align: left;
+        }
+
+        .club-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-heading);
+            letter-spacing: -0.01em;
+        }
+
+        .club-sub {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            display: block;
+        }
+
+        .club-shield {
+            width: 34px;
+            height: 34px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-brand);
+            font-weight: 700;
+            color: var(--mint-light);
+            font-size: 11px;
+            flex-shrink: 0;
+        }
+
+        .scoreboard-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .score-pill-b {
+            background: #0d1615;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 5px 18px;
+            border-radius: var(--radius-sm);
+            font-family: var(--font-data);
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text-pure);
+            letter-spacing: 0.1em;
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5);
+        }
+
+        .score-pill-b.live {
+            border-color: rgba(244, 63, 94, 0.4);
+            color: #fb7185;
+            background: rgba(244, 63, 94, 0.08);
+        }
+
+        .score-pill-b.scheduled {
+            font-size: 13px;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+
+        /* 方向 B 核心特色：现代精密罗盘胜率进度条 (Precision Gauge) */
+        .opta-momentum-dock {
+            background: rgba(0, 0, 0, 0.22);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+        }
+
+        .opta-dock-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 7px;
+            font-size: 11.5px;
+        }
+
+        .opta-badge-icon {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--mint-light);
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .opta-verdict {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-heading);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .opta-track-rail {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 3px;
+            display: flex;
+            overflow: hidden;
+            gap: 2px;
+            margin-bottom: 6px;
+        }
+
+        .opta-track-fill {
+            height: 100%;
+            border-radius: 1px;
+        }
+
+        .opta-track-fill.home {
+            background: var(--mint-primary);
+        }
+
+        .opta-track-fill.draw {
+            background: #64748b;
+        }
+
+        .opta-track-fill.away {
+            background: var(--rose-danger);
+        }
+
+        .opta-prob-readout {
+            display: flex;
+            justify-content: space-between;
+            font-family: var(--font-data);
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .opta-prob-readout strong {
+            color: var(--text-pure);
+        }
+
+        /* 侧边分析终端卡片 (Intelligence Sidebar) */
+        .sidebar-station {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .intel-widget {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: 16px;
+        }
+
+        .widget-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .widget-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-heading);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .widget-title i {
+            color: var(--mint-light);
+        }
+
+        .station-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .station-table th {
+            text-align: left;
+            padding: 6px 4px;
+            color: var(--text-tertiary);
+            font-size: 10.5px;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .station-table td {
+            padding: 8px 4px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            color: var(--text-secondary);
+        }
+
+        .pos-badge {
+            width: 18px;
+            height: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 3px;
+            font-family: var(--font-data);
+            font-size: 10px;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-secondary);
+        }
+
+        .pos-badge.top {
+            background: rgba(16, 185, 129, 0.16);
+            color: var(--mint-light);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .pts-value {
+            font-family: var(--font-data);
+            font-weight: 700;
+            color: var(--text-pure);
+            text-align: right;
+        }
+
+        /* 移动端 (390px) 优化 */
+        @media (max-width: 900px) {
+            .grid-workbench {
+                grid-template-columns: 1fr;
+                padding: 12px;
+                gap: 12px;
+            }
+
+            .workbench-glance-bar {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .match-clash {
+                grid-template-columns: 1fr 100px 1fr;
+                gap: 8px;
+            }
+
+            .club-title {
+                font-size: 13.5px;
+            }
+
+            .club-shield {
+                width: 28px;
+                height: 28px;
+                font-size: 10px;
+            }
+
+            .score-pill-b {
+                font-size: 16px;
+                padding: 4px 12px;
+            }
+
+            .station-controls .telemetry-node {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 顶栏 -->
+    <header class="station-header">
+        <div class="header-container">
+            <a href="#" class="brand-unit">
+                <div class="brand-logo-icon">
+                    <i class="ph-bold ph-lightning"></i>
+                </div>
+                <div class="brand-title">Match<span>Stats</span></div>
+                <div class="platform-badge">Opta AI Station</div>
+            </a>
+
+            <!-- 赛况状态筛选 -->
+            <div class="filter-ribbon">
+                <button class="filter-chip active">
+                    <span>全部</span>
+                    <span class="filter-count">11</span>
+                </button>
+                <button class="filter-chip">
+                    <span>进行中</span>
+                    <span class="filter-count">2</span>
+                </button>
+                <button class="filter-chip">
+                    <span>未开赛</span>
+                    <span class="filter-count">3</span>
+                </button>
+                <button class="filter-chip">
+                    <span>已完赛</span>
+                    <span class="filter-count">6</span>
+                </button>
+            </div>
+
+            <!-- 右侧状态与操作 -->
+            <div class="station-controls">
+                <div class="telemetry-node">
+                    <div class="pulse-gem"></div>
+                    <span>SYNC 21:02</span>
+                </div>
+                <button class="btn-action-ghost">
+                    <i class="ph ph-arrows-clockwise"></i>
+                    <span>刷新</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 联赛胶囊切换条 -->
+    <nav class="sub-deck">
+        <div class="sub-deck-container">
+            <button class="league-chip active">
+                <span class="chip-badge">PL</span>
+                <span>英超 Premier League</span>
+            </button>
+            <button class="league-chip">
+                <span class="chip-badge">PD</span>
+                <span>西甲 La Liga</span>
+            </button>
+            <button class="league-chip">
+                <span class="chip-badge">BL1</span>
+                <span>德甲 Bundesliga</span>
+            </button>
+            <button class="league-chip">
+                <span class="chip-badge">SA</span>
+                <span>意甲 Serie A</span>
+            </button>
+            <button class="league-chip">
+                <span class="chip-badge">FL1</span>
+                <span>法甲 Ligue 1</span>
+            </button>
+            <button class="league-chip">
+                <span class="chip-badge">CL</span>
+                <span>欧冠 Champions League</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- 主工作区 -->
+    <main class="grid-workbench">
+
+        <!-- 紧凑微型仪表概览行 -->
+        <div class="workbench-glance-bar">
+            <div class="glance-tile">
+                <span class="glance-label">联赛在库赛事</span>
+                <span class="glance-val">1,941</span>
+            </div>
+            <div class="glance-tile">
+                <span class="glance-label">今日视角场次</span>
+                <span class="glance-val mint">11</span>
+            </div>
+            <div class="glance-tile">
+                <span class="glance-label">Opta 胜率覆盖</span>
+                <span class="glance-val mint">100%</span>
+            </div>
+            <div class="glance-tile">
+                <span class="glance-label">数据通道延迟</span>
+                <span class="glance-val">28ms</span>
+            </div>
+        </div>
+
+        <!-- 比赛列表主区域 -->
+        <section class="feed-container">
+
+            <!-- 比赛卡片 1：切尔西 vs 托特纳姆热刺 (IN_PLAY 带 Opta 胜率) -->
+            <article class="match-card-b">
+                <div class="card-topline">
+                    <div class="match-time-tag">
+                        <i class="ph ph-clock"></i>
+                        <span>今日 19:15 · 英超第 10 轮 · 斯坦福桥</span>
+                    </div>
+                    <div class="badge-live-pulse">
+                        <span class="beacon"></span>
+                        <span>LIVE 64'</span>
+                    </div>
+                </div>
+
+                <div class="match-clash">
+                    <div class="club-side home">
+                        <div>
+                            <div class="club-title">切尔西</div>
+                            <span class="club-sub">Chelsea FC</span>
+                        </div>
+                        <div class="club-shield">CHE</div>
+                    </div>
+
+                    <div class="scoreboard-center">
+                        <div class="score-pill-b live">0 - 0</div>
+                    </div>
+
+                    <div class="club-side away">
+                        <div class="club-shield">TOT</div>
+                        <div>
+                            <div class="club-title">托特纳姆热刺</div>
+                            <span class="club-sub">Tottenham Hotspur</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 现代精密罗盘胜率进度条 -->
+                <div class="opta-momentum-dock">
+                    <div class="opta-dock-header">
+                        <div class="opta-badge-icon">
+                            <i class="ph-fill ph-brain"></i>
+                            <span>OPTA PROBABILITY</span>
+                        </div>
+                        <div class="opta-verdict">
+                            <span>切尔西占优 46.5%</span>
+                            <i class="ph-bold ph-caret-up" style="color: var(--mint-light);"></i>
+                        </div>
+                    </div>
+                    <div class="opta-track-rail">
+                        <div class="opta-track-fill home" style="width: 46.5%;"></div>
+                        <div class="opta-track-fill draw" style="width: 25.9%;"></div>
+                        <div class="opta-track-fill away" style="width: 27.6%;"></div>
+                    </div>
+                    <div class="opta-prob-readout">
+                        <span>主胜 <strong>46.5%</strong></span>
+                        <span>平局 <strong>25.9%</strong></span>
+                        <span>客胜 <strong>27.6%</strong></span>
+                    </div>
+                </div>
+            </article>
+
+            <!-- 比赛卡片 2：伯恩茅斯 vs 曼城 (IN_PLAY 带 Opta 胜率) -->
+            <article class="match-card-b">
+                <div class="card-topline">
+                    <div class="match-time-tag">
+                        <i class="ph ph-clock"></i>
+                        <span>今日 18:30 · 英超第 10 轮 · 活力球场</span>
+                    </div>
+                    <div class="badge-live-pulse">
+                        <span class="beacon"></span>
+                        <span>LIVE 82'</span>
+                    </div>
+                </div>
+
+                <div class="match-clash">
+                    <div class="club-side home">
+                        <div>
+                            <div class="club-title">伯恩茅斯</div>
+                            <span class="club-sub">AFC Bournemouth</span>
+                        </div>
+                        <div class="club-shield">BOU</div>
+                    </div>
+
+                    <div class="scoreboard-center">
+                        <div class="score-pill-b live">1 - 0</div>
+                    </div>
+
+                    <div class="club-side away">
+                        <div class="club-shield">MCI</div>
+                        <div>
+                            <div class="club-title">曼彻斯特城</div>
+                            <span class="club-sub">Manchester City</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="opta-momentum-dock">
+                    <div class="opta-dock-header">
+                        <div class="opta-badge-icon">
+                            <i class="ph-fill ph-brain"></i>
+                            <span>OPTA PROBABILITY</span>
+                        </div>
+                        <div class="opta-verdict">
+                            <span>曼城逆转胜率 58.3%</span>
+                            <i class="ph-bold ph-trend-up" style="color: var(--rose-danger);"></i>
+                        </div>
+                    </div>
+                    <div class="opta-track-rail">
+                        <div class="opta-track-fill home" style="width: 20.7%;"></div>
+                        <div class="opta-track-fill draw" style="width: 21.0%;"></div>
+                        <div class="opta-track-fill away" style="width: 58.3%;"></div>
+                    </div>
+                    <div class="opta-prob-readout">
+                        <span>主胜 <strong>20.7%</strong></span>
+                        <span>平局 <strong>21.0%</strong></span>
+                        <span>客胜 <strong>58.3%</strong></span>
+                    </div>
+                </div>
+            </article>
+
+            <!-- 比赛卡片 3：阿森纳 vs 利物浦 (FINISHED) -->
+            <article class="match-card-b">
+                <div class="card-topline">
+                    <div class="match-time-tag">
+                        <i class="ph ph-calendar"></i>
+                        <span>10/26 00:30 · 酋长球场</span>
+                    </div>
+                    <div class="badge-finish">完场 FT</div>
+                </div>
+
+                <div class="match-clash">
+                    <div class="club-side home">
+                        <div>
+                            <div class="club-title">阿森纳</div>
+                            <span class="club-sub">Arsenal FC</span>
+                        </div>
+                        <div class="club-shield">ARS</div>
+                    </div>
+
+                    <div class="scoreboard-center">
+                        <div class="score-pill-b">2 - 2</div>
+                    </div>
+
+                    <div class="club-side away">
+                        <div class="club-shield">LIV</div>
+                        <div>
+                            <div class="club-title">利物浦</div>
+                            <span class="club-sub">Liverpool FC</span>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- 比赛卡片 4：富勒姆 vs 布伦特福德 (SCHEDULED) -->
+            <article class="match-card-b">
+                <div class="card-topline">
+                    <div class="match-time-tag">
+                        <i class="ph ph-calendar"></i>
+                        <span>明日 04:00 · 克拉文农场</span>
+                    </div>
+                    <div class="badge-finish" style="color: var(--mint-light);">未开赛</div>
+                </div>
+
+                <div class="match-clash">
+                    <div class="club-side home">
+                        <div>
+                            <div class="club-title">富勒姆</div>
+                            <span class="club-sub">Fulham FC</span>
+                        </div>
+                        <div class="club-shield">FUL</div>
+                    </div>
+
+                    <div class="scoreboard-center">
+                        <div class="score-pill-b scheduled">VS</div>
+                    </div>
+
+                    <div class="club-side away">
+                        <div class="club-shield">BRE</div>
+                        <div>
+                            <div class="club-title">布伦特福德</div>
+                            <span class="club-sub">Brentford FC</span>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+        </section>
+
+        <!-- 右侧分析侧边栏 -->
+        <aside class="sidebar-station">
+            <div class="intel-widget">
+                <div class="widget-head">
+                    <div class="widget-title">
+                        <i class="ph-bold ph-table"></i>
+                        <span>英超实时积分</span>
+                    </div>
+                    <span style="font-size: 11px; font-family: var(--font-data); color: var(--text-tertiary);">2026/27</span>
+                </div>
+
+                <table class="station-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 24px;">#</th>
+                            <th>球队</th>
+                            <th style="text-align: center; width: 32px;">赛</th>
+                            <th style="text-align: center; width: 32px;">净</th>
+                            <th style="text-align: right; width: 36px;">分</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="pos-badge top">1</span></td>
+                            <td><strong style="color: var(--text-heading);">曼彻斯特城</strong></td>
+                            <td style="text-align: center; font-family: var(--font-data);">9</td>
+                            <td style="text-align: center; font-family: var(--font-data); color: var(--mint-light);">+11</td>
+                            <td class="pts-value">23</td>
+                        </tr>
+                        <tr>
+                            <td><span class="pos-badge top">2</span></td>
+                            <td><strong style="color: var(--text-heading);">利物浦</strong></td>
+                            <td style="text-align: center; font-family: var(--font-data);">9</td>
+                            <td style="text-align: center; font-family: var(--font-data); color: var(--mint-light);">+12</td>
+                            <td class="pts-value">22</td>
+                        </tr>
+                        <tr>
+                            <td><span class="pos-badge top">3</span></td>
+                            <td><strong style="color: var(--text-heading);">阿森纳</strong></td>
+                            <td style="text-align: center; font-family: var(--font-data);">9</td>
+                            <td style="text-align: center; font-family: var(--font-data); color: var(--mint-light);">+7</td>
+                            <td class="pts-value">18</td>
+                        </tr>
+                        <tr>
+                            <td><span class="pos-badge top">4</span></td>
+                            <td><strong style="color: var(--text-heading);">阿斯顿维拉</strong></td>
+                            <td style="text-align: center; font-family: var(--font-data);">9</td>
+                            <td style="text-align: center; font-family: var(--font-data); color: var(--mint-light);">+5</td>
+                            <td class="pts-value">18</td>
+                        </tr>
+                        <tr>
+                            <td><span class="pos-badge">5</span></td>
+                            <td>切尔西</td>
+                            <td style="text-align: center; font-family: var(--font-data);">9</td>
+                            <td style="text-align: center; font-family: var(--font-data);">+8</td>
+                            <td class="pts-value">17</td>
+                        </tr>
+                        <tr>
+                            <td><span class="pos-badge">6</span></td>
+                            <td>托特纳姆热刺</td>
+                            <td style="text-align: center; font-family: var(--font-data);">9</td>
+                            <td style="text-align: center; font-family: var(--font-data);">+8</td>
+                            <td class="pts-value">13</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </aside>
+
+    </main>
+
+</body>
+</html>

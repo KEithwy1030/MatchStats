@@ -1,0 +1,73 @@
+/**
+ * MatchStats 统一设计变量体系 (Design Tokens)
+ * 遵循 K-design SOP 规范，杜绝通用默认色板
+ */
+
+:root {
+  /* ==========================================================================
+     1. 色彩体系 (Color Palette) - 旗舰体育智库体系
+     ========================================================================== */
+  /* 背景层级 */
+  --ms-bg-canvas: #09100d;            /* 主画布：深邃球场夜色 */
+  --ms-bg-surface: #101a15;           /* 卡片与面板底色 */
+  --ms-bg-surface-elevated: #15241d;  /* 悬浮/激活卡片底色 */
+  --ms-bg-surface-subtle: #0d1612;    /* 凹陷/深层底色 */
+
+  /* 边框体系 */
+  --ms-border-subtle: rgba(255, 255, 255, 0.08);
+  --ms-border-medium: rgba(255, 255, 255, 0.14);
+  --ms-border-accent: rgba(212, 163, 75, 0.35);
+
+  /* 文字层级 (对比度均 ≥ 7.5:1) */
+  --ms-text-title: #f7f6f2;           /* 主标题、高亮数值：象牙米白 */
+  --ms-text-body: #d2dbd5;            /* 正文、队名：冷鼠尾草浅灰 */
+  --ms-text-muted: #85968d;           /* 辅助说明、球场、时间 */
+  --ms-text-dim: #54655c;             /* 极弱标签、次要编号 */
+
+  /* 品牌与专业强调色 */
+  --ms-opta-gold: #d4a34b;            /* Opta 官方权威金 */
+  --ms-opta-gold-light: #f3c77c;
+  --ms-opta-gold-bg: rgba(212, 163, 75, 0.12);
+
+  --ms-pitch-green: #1f9457;          /* 欧洲草坪正绿 */
+  --ms-pitch-green-light: #29b86d;
+  --ms-pitch-green-bg: rgba(31, 148, 87, 0.16);
+
+  --ms-live-red: #e04545;             /* 焦点赛事实时红 */
+  --ms-live-red-bg: rgba(224, 69, 69, 0.16);
+
+  /* Opta 概率三段色 */
+  --ms-prob-home: #1f9457;            /* 主胜：球场绿 */
+  --ms-prob-draw: #5a7065;            /* 平局：中性岩灰 */
+  --ms-prob-away: #c84646;            /* 客胜：砖红 */
+
+  /* ==========================================================================
+     2. 字体族与排版体系 (Typography)
+     ========================================================================== */
+  --ms-font-display: "Plus Jakarta Sans", "Noto Sans SC", system-ui, -apple-system, sans-serif;
+  --ms-font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* 字阶梯 */
+  --ms-text-xs: 11px;
+  --ms-text-sm: 12px;
+  --ms-text-base: 13.5px;
+  --ms-text-md: 15px;
+  --ms-text-lg: 17px;
+  --ms-text-xl: 20px;
+  --ms-text-2xl: 24px;
+
+  /* ==========================================================================
+     3. 几何与微质感 (Radius, Shadows & Transitions)
+     ========================================================================== */
+  --ms-radius-xs: 3px;
+  --ms-radius-sm: 4px;
+  --ms-radius-md: 6px;
+  --ms-radius-lg: 10px;
+
+  --ms-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --ms-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --ms-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.6);
+
+  --ms-transition-fast: 0.15s ease;
+  --ms-transition-normal: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}

@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MatchStats | 方向 A：旗舰体育数据智库风</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        :root {
+            /* 方向 A：旗舰智库风核心色板 (Opta Analyst / The Athletic 旗舰刊物视觉) */
+            --bg-canvas: #09100d;
+            --bg-surface: #101a15;
+            --bg-surface-elevated: #15241d;
+            --bg-surface-subtle: #0d1612;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-medium: rgba(255, 255, 255, 0.14);
+            --border-accent: rgba(212, 163, 75, 0.35);
+
+            --text-title: #f7f6f2;
+            --text-body: #d2dbd5;
+            --text-muted: #85968d;
+            --text-dim: #54655c;
+
+            --opta-gold: #d4a34b;
+            --opta-gold-light: #f3c77c;
+            --opta-gold-bg: rgba(212, 163, 75, 0.12);
+
+            --pitch-green: #1f9457;
+            --pitch-green-bg: rgba(31, 148, 87, 0.16);
+            --live-red: #e04545;
+            --live-red-bg: rgba(224, 69, 69, 0.16);
+
+            --prob-home: #1f9457;
+            --prob-draw: #5a7065;
+            --prob-away: #c84646;
+
+            --font-display: "Plus Jakarta Sans", "Noto Sans SC", -apple-system, sans-serif;
+            --font-mono: "JetBrains Mono", monospace;
+            --radius-sm: 4px;
+            --radius-md: 6px;
+            --radius-lg: 10px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-canvas);
+            color: var(--text-body);
+            font-family: var(--font-display);
+            font-size: 14px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* 顶部权威刊物式导航 */
+        .masthead {
+            background: linear-gradient(180deg, #13221b 0%, #0d1713 100%);
+            border-bottom: 1px solid var(--border-medium);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            backdrop-filter: blur(8px);
+        }
+
+        .masthead-inner {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .brand-cluster {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .brand-crest {
+            width: 34px;
+            height: 34px;
+            background: linear-gradient(135deg, #1f9457 0%, #0d4a2b 100%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 18px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .brand-meta h1 {
+            font-size: 17px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--text-title);
+            line-height: 1.1;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .brand-meta h1 span {
+            color: var(--opta-gold);
+            font-weight: 400;
+        }
+
+        .brand-tag {
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        /* 赛况状态筛选（药丸切换） */
+        .status-segment {
+            display: flex;
+            background: var(--bg-surface-subtle);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            padding: 2px;
+            gap: 2px;
+        }
+
+        .status-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+
+        .status-btn.active {
+            background: var(--bg-surface-elevated);
+            color: var(--text-title);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .status-btn:hover:not(.active) {
+            color: var(--text-body);
+        }
+
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sync-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-subtle);
+            padding: 5px 10px;
+            border-radius: var(--radius-sm);
+        }
+
+        .sync-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--pitch-green);
+            box-shadow: 0 0 6px var(--pitch-green);
+        }
+
+        .btn-refresh {
+            background: var(--opta-gold-bg);
+            border: 1px solid var(--border-accent);
+            color: var(--opta-gold-light);
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s;
+        }
+
+        .btn-refresh:hover {
+            background: rgba(212, 163, 75, 0.22);
+        }
+
+        /* 联赛次导航栏 (Editorial Subbar) */
+        .league-bar {
+            background: #0d1712;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .league-bar-inner {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .league-bar-inner::-webkit-scrollbar {
+            display: none;
+        }
+
+        .league-tab {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 18px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.15s ease;
+        }
+
+        .league-tab:hover {
+            color: var(--text-title);
+        }
+
+        .league-tab.active {
+            color: var(--opta-gold);
+            border-bottom-color: var(--opta-gold);
+            background: rgba(212, 163, 75, 0.04);
+        }
+
+        .league-badge-code {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 2px 5px;
+            border-radius: 2px;
+            color: var(--text-body);
+        }
+
+        /* 主体布局两栏式 */
+        .workspace {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 24px;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 380px;
+            gap: 24px;
+            align-items: start;
+        }
+
+        /* 精炼情报信息条 (Compact Ribbon) */
+        .intel-ribbon {
+            grid-column: 1 / -1;
+            background: linear-gradient(90deg, rgba(31, 148, 87, 0.12) 0%, rgba(13, 23, 19, 0.8) 100%);
+            border: 1px solid rgba(31, 148, 87, 0.25);
+            border-radius: var(--radius-md);
+            padding: 10px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--text-title);
+        }
+
+        .intel-highlight {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .intel-highlight i {
+            color: var(--opta-gold);
+            font-size: 16px;
+        }
+
+        .intel-stats-summary {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        .intel-stats-summary strong {
+            color: var(--text-title);
+            font-weight: 700;
+        }
+
+        /* 比赛列表核心容器 */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-title);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .section-title::before {
+            content: "";
+            width: 3px;
+            height: 14px;
+            background: var(--opta-gold);
+            display: inline-block;
+            border-radius: 1px;
+        }
+
+        .matches-stream {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* 方向 A 核心特色卡片：沉浸权威比赛卡片 */
+        .match-card-a {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            transition: all 0.2s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .match-card-a:hover {
+            background: var(--bg-surface-elevated);
+            border-color: var(--border-medium);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .match-meta-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .match-datetime {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+        }
+
+        .league-indicator {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2px 6px;
+            border-radius: 2px;
+            font-size: 11px;
+            color: var(--text-body);
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .status-badge.live {
+            background: var(--live-red-bg);
+            color: #ff6b6b;
+            border: 1px solid rgba(224, 69, 69, 0.35);
+        }
+
+        .status-badge.live::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #ff4757;
+            animation: pulse-dot 1.2s infinite ease-in-out;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.3); }
+        }
+
+        .status-badge.finished {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-muted);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .status-badge.scheduled {
+            background: var(--pitch-green-bg);
+            color: #38d382;
+            border: 1px solid rgba(31, 148, 87, 0.3);
+        }
+
+        /* 队伍对决骨架 */
+        .duel-stage {
+            display: grid;
+            grid-template-columns: 1fr 120px 1fr;
+            align-items: center;
+            gap: 16px;
+            padding: 6px 0 14px 0;
+        }
+
+        .team-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .team-box.home {
+            justify-content: flex-end;
+            text-align: right;
+        }
+
+        .team-box.away {
+            justify-content: flex-start;
+            text-align: left;
+        }
+
+        .team-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-title);
+            letter-spacing: -0.01em;
+        }
+
+        .team-name-sub {
+            display: block;
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .team-shield-box {
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: var(--opta-gold);
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .score-pod {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .score-display {
+            background: var(--bg-surface-subtle);
+            border: 1px solid var(--border-medium);
+            padding: 6px 16px;
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text-title);
+            letter-spacing: 0.1em;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .score-display.live {
+            color: #ff6b6b;
+            border-color: rgba(224, 69, 69, 0.4);
+            background: rgba(224, 69, 69, 0.06);
+        }
+
+        .score-display.upcoming {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+        }
+
+        /* 方向 A 签名设计：智库刊物版 Opta AI 概率条 */
+        .opta-intel-deck {
+            border-top: 1px solid var(--border-subtle);
+            padding-top: 12px;
+            margin-top: 4px;
+        }
+
+        .opta-caption {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 11px;
+        }
+
+        .opta-label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--opta-gold);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .opta-favored-tag {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-title);
+            background: rgba(255, 255, 255, 0.04);
+            padding: 2px 6px;
+            border-radius: 2px;
+        }
+
+        .opta-bar-frame {
+            height: 7px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 3px;
+            display: flex;
+            overflow: hidden;
+            gap: 1px;
+            margin-bottom: 6px;
+        }
+
+        .opta-seg {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .opta-seg.home {
+            background: linear-gradient(90deg, #1f9457 0%, #29b86d 100%);
+        }
+
+        .opta-seg.draw {
+            background: #5b6f65;
+        }
+
+        .opta-seg.away {
+            background: linear-gradient(90deg, #c84646 0%, #e05353 100%);
+        }
+
+        .opta-values-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            font-family: var(--font-mono);
+            color: var(--text-muted);
+        }
+
+        .opta-values-row span strong {
+            color: var(--text-title);
+            font-weight: 700;
+        }
+
+        /* 侧边信息栏 (Standings & Scorers) */
+        .intel-panel {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding: 18px;
+        }
+
+        .panel-nav-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-subtle);
+            gap: 12px;
+            padding-bottom: 10px;
+        }
+
+        .panel-tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            padding-bottom: 4px;
+            position: relative;
+        }
+
+        .panel-tab-btn.active {
+            color: var(--text-title);
+        }
+
+        .panel-tab-btn.active::after {
+            content: "";
+            position: absolute;
+            bottom: -11px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--opta-gold);
+        }
+
+        .intel-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .intel-table th {
+            text-align: left;
+            padding: 8px 6px;
+            color: var(--text-dim);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-subtle);
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .intel-table td {
+            padding: 9px 6px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: var(--text-body);
+        }
+
+        .rank-badge {
+            width: 20px;
+            height: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 2px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+        }
+
+        .rank-badge.ucl {
+            background: var(--pitch-green);
+            color: #ffffff;
+        }
+
+        .pts-col {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            color: var(--text-title);
+            text-align: right;
+        }
+
+        /* 响应式优化 (Mobile 390px) */
+        @media (max-width: 900px) {
+            .workspace {
+                grid-template-columns: 1fr;
+                padding: 14px;
+                gap: 16px;
+            }
+
+            .masthead-inner {
+                padding: 0 14px;
+                height: 56px;
+            }
+
+            .brand-tag, .sync-pill {
+                display: none;
+            }
+
+            .duel-stage {
+                grid-template-columns: 1fr 90px 1fr;
+                gap: 8px;
+            }
+
+            .team-name {
+                font-size: 13px;
+            }
+
+            .team-shield-box {
+                width: 28px;
+                height: 28px;
+                font-size: 10px;
+            }
+
+            .score-display {
+                font-size: 16px;
+                padding: 4px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 顶栏 -->
+    <header class="masthead">
+        <div class="masthead-inner">
+            <a href="#" class="brand-cluster">
+                <div class="brand-crest">
+                    <i class="ph-fill ph-soccer-ball"></i>
+                </div>
+                <div class="brand-meta">
+                    <h1>Match<span>Stats</span></h1>
+                    <div class="brand-tag">Opta AI 胜率分析中心</div>
+                </div>
+            </a>
+
+            <!-- 赛况筛选 -->
+            <div class="status-segment">
+                <button class="status-btn active">全部 11</button>
+                <button class="status-btn">进行中 2</button>
+                <button class="status-btn">未开赛 3</button>
+                <button class="status-btn">已完赛 6</button>
+            </div>
+
+            <!-- 右侧动作 -->
+            <div class="top-actions">
+                <div class="sync-pill">
+                    <div class="sync-dot"></div>
+                    <span>数据库活跃 · 刚刚同步</span>
+                </div>
+                <button class="btn-refresh">
+                    <i class="ph ph-arrows-clockwise"></i>
+                    <span>刷新</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 联赛横向切换导航 -->
+    <nav class="league-bar">
+        <div class="league-bar-inner">
+            <div class="league-tab active">
+                <span class="league-badge-code">PL</span>
+                <span>英格兰超级联赛</span>
+            </div>
+            <div class="league-tab">
+                <span class="league-badge-code">PD</span>
+                <span>西班牙甲级联赛</span>
+            </div>
+            <div class="league-tab">
+                <span class="league-badge-code">BL1</span>
+                <span>德国甲级联赛</span>
+            </div>
+            <div class="league-tab">
+                <span class="league-badge-code">SA</span>
+                <span>意大利甲级联赛</span>
+            </div>
+            <div class="league-tab">
+                <span class="league-badge-code">FL1</span>
+                <span>法国甲级联赛</span>
+            </div>
+            <div class="league-tab">
+                <span class="league-badge-code">CL</span>
+                <span>欧洲冠军联赛</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 工作空间 -->
+    <main class="workspace">
+
+        <!-- 精炼情报信息条 -->
+        <div class="intel-ribbon">
+            <div class="intel-highlight">
+                <i class="ph-fill ph-brain"></i>
+                <span><strong>Opta 胜率模型已激活</strong> · 实时捕捉全场预期进球 xG 与博弈概率</span>
+            </div>
+            <div class="intel-stats-summary">
+                <span>欧洲联赛在库: <strong>1,941</strong> 场</span>
+                <span>当前视图: <strong>11</strong> 场</span>
+            </div>
+        </div>
+
+        <!-- 左侧核心比赛列表 -->
+        <section class="matches-container">
+            <div class="section-header">
+                <div class="section-title">英超今日焦点赛程与概率</div>
+                <span style="font-size: 12px; color: var(--text-muted);">GMT+8 实时同步</span>
+            </div>
+
+            <div class="matches-stream">
+
+                <!-- 比赛 1：切尔西 vs 托特纳姆热刺 (IN_PLAY 带 Opta 胜率) -->
+                <article class="match-card-a">
+                    <div class="match-meta-bar">
+                        <div class="match-datetime">
+                            <span class="league-indicator">英超第 10 轮</span>
+                            <span>今日 19:15 · 斯坦福桥球场</span>
+                        </div>
+                        <span class="status-badge live">进行中 64'</span>
+                    </div>
+
+                    <div class="duel-stage">
+                        <div class="team-box home">
+                            <div>
+                                <div class="team-name">切尔西</div>
+                                <span class="team-name-sub">Chelsea FC</span>
+                            </div>
+                            <div class="team-shield-box">CHE</div>
+                        </div>
+
+                        <div class="score-pod">
+                            <div class="score-display live">0 - 0</div>
+                        </div>
+
+                        <div class="team-box away">
+                            <div class="team-shield-box">TOT</div>
+                            <div>
+                                <div class="team-name">托特纳姆热刺</div>
+                                <span class="team-name-sub">Tottenham Hotspur</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 旗舰 Opta 胜率图谱 -->
+                    <div class="opta-intel-deck">
+                        <div class="opta-caption">
+                            <div class="opta-label">
+                                <i class="ph-fill ph-chart-polar"></i>
+                                <span>Opta AI 胜率投影</span>
+                            </div>
+                            <div class="opta-favored-tag">切尔西 46.5% 主胜领先</div>
+                        </div>
+                        <div class="opta-bar-frame">
+                            <div class="opta-seg home" style="width: 46.5%;"></div>
+                            <div class="opta-seg draw" style="width: 25.9%;"></div>
+                            <div class="opta-seg away" style="width: 27.6%;"></div>
+                        </div>
+                        <div class="opta-values-row">
+                            <span>主胜 <strong>46.5%</strong></span>
+                            <span>平局 <strong>25.9%</strong></span>
+                            <span>客胜 <strong>27.6%</strong></span>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- 比赛 2：伯恩茅斯 vs 曼城 (IN_PLAY 带 Opta 胜率) -->
+                <article class="match-card-a">
+                    <div class="match-meta-bar">
+                        <div class="match-datetime">
+                            <span class="league-indicator">英超第 10 轮</span>
+                            <span>今日 18:30 · 活力球场</span>
+                        </div>
+                        <span class="status-badge live">进行中 82'</span>
+                    </div>
+
+                    <div class="duel-stage">
+                        <div class="team-box home">
+                            <div>
+                                <div class="team-name">伯恩茅斯</div>
+                                <span class="team-name-sub">AFC Bournemouth</span>
+                            </div>
+                            <div class="team-shield-box">BOU</div>
+                        </div>
+
+                        <div class="score-pod">
+                            <div class="score-display live">1 - 0</div>
+                        </div>
+
+                        <div class="team-box away">
+                            <div class="team-shield-box">MCI</div>
+                            <div>
+                                <div class="team-name">曼彻斯特城</div>
+                                <span class="team-name-sub">Manchester City</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="opta-intel-deck">
+                        <div class="opta-caption">
+                            <div class="opta-label">
+                                <i class="ph-fill ph-chart-polar"></i>
+                                <span>Opta AI 胜率投影</span>
+                            </div>
+                            <div class="opta-favored-tag">曼城 58.3% 客胜占优</div>
+                        </div>
+                        <div class="opta-bar-frame">
+                            <div class="opta-seg home" style="width: 20.7%;"></div>
+                            <div class="opta-seg draw" style="width: 21.0%;"></div>
+                            <div class="opta-seg away" style="width: 58.3%;"></div>
+                        </div>
+                        <div class="opta-values-row">
+                            <span>主胜 <strong>20.7%</strong></span>
+                            <span>平局 <strong>21.0%</strong></span>
+                            <span>客胜 <strong>58.3%</strong></span>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- 比赛 3：阿森纳 vs 利物浦 (FINISHED) -->
+                <article class="match-card-a">
+                    <div class="match-meta-bar">
+                        <div class="match-datetime">
+                            <span class="league-indicator">英超焦点天王山</span>
+                            <span>10/26 00:30 · 酋长球场</span>
+                        </div>
+                        <span class="status-badge finished">已完场</span>
+                    </div>
+
+                    <div class="duel-stage">
+                        <div class="team-box home">
+                            <div>
+                                <div class="team-name">阿森纳</div>
+                                <span class="team-name-sub">Arsenal FC</span>
+                            </div>
+                            <div class="team-shield-box">ARS</div>
+                        </div>
+
+                        <div class="score-pod">
+                            <div class="score-display">2 - 2</div>
+                        </div>
+
+                        <div class="team-box away">
+                            <div class="team-shield-box">LIV</div>
+                            <div>
+                                <div class="team-name">利物浦</div>
+                                <span class="team-name-sub">Liverpool FC</span>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- 比赛 4：富勒姆 vs 布伦特福德 (SCHEDULED) -->
+                <article class="match-card-a">
+                    <div class="match-meta-bar">
+                        <div class="match-datetime">
+                            <span class="league-indicator">西伦敦德比</span>
+                            <span>明日 04:00 · 克拉文农场</span>
+                        </div>
+                        <span class="status-badge scheduled">未开赛</span>
+                    </div>
+
+                    <div class="duel-stage">
+                        <div class="team-box home">
+                            <div>
+                                <div class="team-name">富勒姆</div>
+                                <span class="team-name-sub">Fulham FC</span>
+                            </div>
+                            <div class="team-shield-box">FUL</div>
+                        </div>
+
+                        <div class="score-pod">
+                            <div class="score-display upcoming">VS</div>
+                        </div>
+
+                        <div class="team-box away">
+                            <div class="team-shield-box">BRE</div>
+                            <div>
+                                <div class="team-name">布伦特福德</div>
+                                <span class="team-name-sub">Brentford FC</span>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+            </div>
+        </section>
+
+        <!-- 右侧辅助面板 (Standings & Scorers) -->
+        <aside class="side-deck">
+            <div class="intel-panel">
+                <div class="panel-nav-tabs">
+                    <button class="panel-tab-btn active">英超积分榜</button>
+                    <button class="panel-tab-btn">射手榜</button>
+                    <button class="panel-tab-btn">助攻榜</button>
+                </div>
+
+                <table class="intel-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 28px;">#</th>
+                            <th>球队</th>
+                            <th style="text-align: center; width: 36px;">赛</th>
+                            <th style="text-align: center; width: 36px;">净</th>
+                            <th style="text-align: right; width: 36px;">分</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="rank-badge ucl">1</span></td>
+                            <td><strong>曼彻斯特城</strong></td>
+                            <td style="text-align: center; color: var(--text-muted);">9</td>
+                            <td style="text-align: center; color: var(--text-muted);">+11</td>
+                            <td class="pts-col">23</td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-badge ucl">2</span></td>
+                            <td><strong>利物浦</strong></td>
+                            <td style="text-align: center; color: var(--text-muted);">9</td>
+                            <td style="text-align: center; color: var(--text-muted);">+12</td>
+                            <td class="pts-col">22</td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-badge ucl">3</span></td>
+                            <td><strong>阿森纳</strong></td>
+                            <td style="text-align: center; color: var(--text-muted);">9</td>
+                            <td style="text-align: center; color: var(--text-muted);">+7</td>
+                            <td class="pts-col">18</td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-badge ucl">4</span></td>
+                            <td><strong>阿斯顿维拉</strong></td>
+                            <td style="text-align: center; color: var(--text-muted);">9</td>
+                            <td style="text-align: center; color: var(--text-muted);">+5</td>
+                            <td class="pts-col">18</td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-badge">5</span></td>
+                            <td><strong>切尔西</strong></td>
+                            <td style="text-align: center; color: var(--text-muted);">9</td>
+                            <td style="text-align: center; color: var(--text-muted);">+8</td>
+                            <td class="pts-col">17</td>
+                        </tr>
+                        <tr>
+                            <td><span class="rank-badge">6</span></td>
+                            <td><strong>托特纳姆热刺</strong></td>
+                            <td style="text-align: center; color: var(--text-muted);">9</td>
+                            <td style="text-align: center; color: var(--text-muted);">+8</td>
+                            <td class="pts-col">13</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </aside>
+
+    </main>
+
+</body>
+</html>
