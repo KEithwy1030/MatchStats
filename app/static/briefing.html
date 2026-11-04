@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MatchBrief // 赛前核心战报情报卡 - 利物浦 vs 切尔西</title>
+    <meta name="theme-color" content="#09100d">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- CSS Tokens -->
+    <link rel="stylesheet" href="/static/tokens.css">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        :root {
+            --bg-canvas: #070c0a;
+            --bg-card: #0d1613;
+            --bg-card-subtle: #121e1a;
+            --border-card: rgba(212, 163, 75, 0.2);
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --gold-primary: #d4a34b;
+            --gold-light: #f5cf82;
+            --green-win: #10b981;
+            --red-away: #f43f5e;
+            --gray-draw: #64748b;
+            --text-heading: #f7f6f2;
+            --text-body: #cfd3ce;
+            --text-muted: #83908a;
+            --font-display: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-canvas);
+            color: var(--text-body);
+            font-family: var(--font-display);
+            display: flex;
+            justify-content: center;
+            padding: 24px 12px;
+            min-height: 100vh;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 战报长卡主体容器：固定黄金阅读宽度 520px，自适应手机 */
+        .briefing-container {
+            width: 100%;
+            max-width: 520px;
+            background: linear-gradient(180deg, #0e1814 0%, #09100d 100%);
+            border: 1px solid var(--border-card);
+            border-radius: 16px;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(212, 163, 75, 0.15);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* 顶部装饰边 */
+        .briefing-container::before {
+            content: '';
+            display: block;
+            height: 3px;
+            background: linear-gradient(90deg, #d4a34b, #10b981, #f43f5e);
+            width: 100%;
+        }
+
+        /* 头部 Masthead */
+        .briefing-masthead {
+            padding: 20px 24px 16px;
+            background: rgba(0, 0, 0, 0.25);
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(212, 163, 75, 0.15);
+            border: 1px solid var(--gold-primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gold-light);
+            font-size: 18px;
+        }
+
+        .brand-text h1 {
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--text-heading);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .brand-text h1 span {
+            color: var(--gold-light);
+        }
+
+        .brand-text p {
+            font-size: 10px;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .intel-tag {
+            background: rgba(212, 163, 75, 0.12);
+            border: 1px solid rgba(212, 163, 75, 0.3);
+            color: var(--gold-light);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-family: var(--font-mono);
+        }
+
+        /* 对阵与比赛元数据 */
+        .match-meta-section {
+            padding: 24px 24px 16px;
+            text-align: center;
+            position: relative;
+        }
+
+        .competition-title {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--gold-light);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 4px 14px;
+            border-radius: 20px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .versus-layout {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .team-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .team-emblem-wrap {
+            width: 58px;
+            height: 58px;
+            background: var(--bg-card-subtle);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text-heading);
+            margin-bottom: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .team-col.home .team-emblem-wrap {
+            border-color: rgba(16, 185, 129, 0.4);
+            color: #34d399;
+        }
+
+        .team-col.away .team-emblem-wrap {
+            border-color: rgba(244, 63, 94, 0.4);
+            color: #fb7185;
+        }
+
+        .team-name {
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--text-heading);
+            line-height: 1.2;
+            margin-bottom: 4px;
+        }
+
+        .formation-tag {
+            font-size: 11px;
+            font-family: var(--font-mono);
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .vs-badge-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .vs-text {
+            font-size: 14px;
+            font-weight: 900;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+        }
+
+        .match-time-tag {
+            font-size: 10px;
+            font-family: var(--font-mono);
+            color: var(--gold-light);
+            background: rgba(212, 163, 75, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .venue-info {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            border-top: 1px dashed var(--border-subtle);
+            padding-top: 12px;
+        }
+
+        /* 核心模块卡片通用 */
+        .section-card {
+            margin: 0 20px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--gold-light);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .model-status {
+            font-size: 10px;
+            font-family: var(--font-mono);
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        /* Opta 三元胜率带 */
+        .prob-bar-container {
+            display: flex;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 10px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .prob-seg {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .prob-seg.home {
+            background: linear-gradient(90deg, #10b981, #059669);
+        }
+
+        .prob-seg.draw {
+            background: #475569;
+        }
+
+        .prob-seg.away {
+            background: linear-gradient(90deg, #f43f5e, #e11d48);
+        }
+
+        .prob-metrics {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .prob-val.home {
+            color: #34d399;
+        }
+
+        .prob-val.draw {
+            color: #94a3b8;
+        }
+
+        .prob-val.away {
+            color: #fb7185;
+        }
+
+        .prob-verdict-box {
+            background: rgba(212, 163, 75, 0.08);
+            border-left: 3px solid var(--gold-primary);
+            padding: 10px 12px;
+            border-radius: 0 6px 6px 0;
+            font-size: 12px;
+            line-height: 1.5;
+            color: var(--text-heading);
+        }
+
+        .prob-verdict-box strong {
+            color: var(--gold-light);
+        }
+
+        /* 核心球员对比矩阵 */
+        .player-duel-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .player-card {
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .player-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .player-info h4 {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-heading);
+        }
+
+        .player-info p {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        .opta-score-badge {
+            background: rgba(212, 163, 75, 0.15);
+            border: 1px solid rgba(212, 163, 75, 0.3);
+            color: var(--gold-light);
+            font-size: 11px;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            padding: 3px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+        }
+
+        .stat-num {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            color: var(--text-body);
+        }
+
+        /* 战术破绽洞察 */
+        .insight-item {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .insight-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .insight-tag {
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+            margin-top: 1px;
+        }
+
+        .insight-tag.warning {
+            background: rgba(244, 63, 94, 0.15);
+            color: #fb7185;
+            border: 1px solid rgba(244, 63, 94, 0.3);
+        }
+
+        .insight-tag.exploit {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        /* 主播专属提词板（高亮卡片） */
+        .caster-card {
+            margin: 0 20px 16px;
+            background: linear-gradient(135deg, rgba(212, 163, 75, 0.12) 0%, rgba(13, 22, 19, 0.9) 100%);
+            border: 1px solid rgba(212, 163, 75, 0.35);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .caster-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .caster-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--gold-light);
+            text-transform: uppercase;
+        }
+
+        .copy-btn {
+            background: rgba(212, 163, 75, 0.2);
+            border: 1px solid var(--gold-primary);
+            color: var(--text-heading);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: var(--gold-primary);
+            color: #000;
+        }
+
+        .caster-text {
+            font-size: 12.5px;
+            line-height: 1.6;
+            color: var(--text-heading);
+            font-style: normal;
+            border-left: 2px solid var(--gold-primary);
+            padding-left: 10px;
+        }
+
+        /* 底部转换与数据源证明 */
+        .briefing-footer {
+            padding: 18px 24px;
+            background: rgba(0, 0, 0, 0.4);
+            border-top: 1px solid var(--border-subtle);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .footer-action-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-gold {
+            background: var(--gold-primary);
+            color: #09100d;
+            border: 1px solid var(--gold-light);
+        }
+
+        .btn-gold:hover {
+            background: var(--gold-light);
+            box-shadow: 0 4px 12px rgba(212, 163, 75, 0.3);
+        }
+
+        .btn-outline {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-heading);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .attribution-text {
+            font-size: 10px;
+            color: var(--text-muted);
+            letter-spacing: 0.02em;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="briefing-container" id="briefingCard">
+        <!-- 头部 Masthead -->
+        <div class="briefing-masthead">
+            <div class="brand-badge">
+                <div class="brand-icon">
+                    <i class="ph-bold ph-shield-star"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>Match<span>Brief</span></h1>
+                    <p>Opta AI Intelligence Terminal</p>
+                </div>
+            </div>
+            <div class="intel-tag">
+                <i class="ph-fill ph-lock-key"></i>
+                <span>INTEL #26-PL09</span>
+            </div>
+        </div>
+
+        <!-- 对阵与赛程元数据 -->
+        <div class="match-meta-section">
+            <div class="competition-title">
+                <i class="ph-fill ph-trophy"></i>
+                <span>英格兰超级联赛 · 焦点天王山之战</span>
+            </div>
+
+            <div class="versus-layout">
+                <div class="team-col home">
+                    <div class="team-emblem-wrap">LIV</div>
+                    <div class="team-name">利物浦</div>
+                    <div class="formation-tag">4-2-3-1</div>
+                </div>
+
+                <div class="vs-badge-wrap">
+                    <div class="vs-text">VS</div>
+                    <div class="match-time-tag">2026-05-09 19:30</div>
+                </div>
+
+                <div class="team-col away">
+                    <div class="team-emblem-wrap">CHE</div>
+                    <div class="team-name">切尔西</div>
+                    <div class="formation-tag">4-2-3-1</div>
+                </div>
+            </div>
+
+            <div class="venue-info">
+                <span><i class="ph-bold ph-map-pin"></i> 安菲尔德球场 Anfield</span>
+                <span><i class="ph-bold ph-whistle"></i> 主裁: 安东尼·泰勒</span>
+            </div>
+        </div>
+
+        <!-- 模块 1：Opta 超级计算机·胜率博弈罗盘 -->
+        <div class="section-card">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="ph-bold ph-chart-pie-slice"></i>
+                    <span>Opta AI 概率博弈预测</span>
+                </div>
+                <span class="model-status">模型置信度 94.8%</span>
+            </div>
+
+            <div class="prob-bar-container">
+                <div class="prob-seg home" style="width: 50.3%;"></div>
+                <div class="prob-seg draw" style="width: 23.4%;"></div>
+                <div class="prob-seg away" style="width: 26.3%;"></div>
+            </div>
+
+            <div class="prob-metrics">
+                <span class="prob-val home">主胜 50.3%</span>
+                <span class="prob-val draw">平局 23.4%</span>
+                <span class="prob-val away">客胜 26.3%</span>
+            </div>
+
+            <div class="prob-verdict-box">
+                <strong>💡 量化态势研判：</strong>
+                利物浦主场胜率超五成（50.3%）占据绝对压制位；但切尔西近 3 轮由守转攻转化率反弹，<strong>26.3% 客胜赔率区间具备强烈冷门博弈价值</strong>，平局概率低位（23.4%）预示全场决出胜负概率极大。
+            </div>
+        </div>
+
+        <!-- 模块 2：核心对决球员 Opta 投影战力榜 -->
+        <div class="section-card">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="ph-bold ph-users-three"></i>
+                    <span>核心球员 Opta 投影战力</span>
+                </div>
+                <span style="font-size: 10px; color: var(--text-muted); font-family: var(--font-mono);">PER 90 MIN PROJECTION</span>
+            </div>
+
+            <div class="player-duel-grid">
+                <!-- 切尔西核心 -->
+                <div class="player-card">
+                    <div class="player-card-header">
+                        <div class="player-info">
+                            <h4>C. 帕尔默</h4>
+                            <p>切尔西 · 边前腰</p>
+                        </div>
+                        <div class="opta-score-badge">18.1 分</div>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">预期射门 (xAtt)</span>
+                        <span class="stat-num">1.64 次</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">预期进球 (xG)</span>
+                        <span class="stat-num" style="color: #34d399;">0.30</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">射正期望</span>
+                        <span class="stat-num">0.98</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">关键传中</span>
+                        <span class="stat-num">1.75</span>
+                    </div>
+                </div>
+
+                <!-- 利物浦核心 -->
+                <div class="player-card">
+                    <div class="player-card-header">
+                        <div class="player-info">
+                            <h4>F. 维尔茨</h4>
+                            <p>利物浦 · 前腰</p>
+                        </div>
+                        <div class="opta-score-badge">18.5 分</div>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">预期射门 (xAtt)</span>
+                        <span class="stat-num">1.56 次</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">预期进球 (xG)</span>
+                        <span class="stat-num" style="color: #34d399;">0.28</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">射正期望</span>
+                        <span class="stat-num">0.82</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">威胁传球</span>
+                        <span class="stat-num">1.06</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 模块 3：关键战术软肋与博弈破绽 -->
+        <div class="section-card">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="ph-bold ph-crosshair"></i>
+                    <span>微观战术破绽洞察</span>
+                </div>
+                <span style="font-size: 10px; color: var(--text-muted); font-family: var(--font-mono);">OPTA METRICS</span>
+            </div>
+
+            <div class="insight-item">
+                <span class="insight-tag warning">软肋警报</span>
+                <div>
+                    <strong>切尔西后场受迫失误率 18.2%</strong>：面对利物浦前场窒息逼抢，若恩佐回撤接应线路被掐死，中卫出球将面临被直接就地打反击的致命风险。
+                </div>
+            </div>
+
+            <div class="insight-item">
+                <span class="insight-tag exploit">爆点破绽</span>
+                <div>
+                    <strong>利物浦高位身后 40 米真空</strong>：利物浦防线平均推前至中圈前 5 米，帕尔默肋部斜塞配合反击前锋的直塞打身后，是切尔西今晚唯一的高胜率通道。
+                </div>
+            </div>
+        </div>
+
+        <!-- 模块 4：主播赛前专属提词板（一键口播词） -->
+        <div class="caster-card">
+            <div class="caster-header">
+                <div class="caster-badge">
+                    <i class="ph-fill ph-microphone"></i>
+                    <span>主播赛前黄金提词卡 (100字)</span>
+                </div>
+                <button class="copy-btn" onclick="copyCasterText()">
+                    <i class="ph-bold ph-copy"></i>
+                    <span id="copyBtnText">一键复制口播</span>
+                </button>
+            </div>
+            <p class="caster-text" id="casterCue">
+                “各位观众晚上好！今晚安菲尔德天王山，Opta 超级计算机给出利物浦 50.3% 胜率，平局 23.4%，切尔西 26.3%。大家别光看比分，重点看中场数据：切尔西帕尔默今晚预期射门高达 1.64 次，利物浦维尔茨在弧顶传威胁球率是全场最高。双方同为 4-2-3-1，胜负手全看谁先抓住对方后腰身后的肋部真空！”
+            </p>
+        </div>
+
+        <!-- 底部数据溯源与行动号召 -->
+        <div class="briefing-footer">
+            <div class="footer-action-row">
+                <a href="/matchstats/" class="btn-action btn-gold">
+                    <i class="ph-bold ph-trend-up"></i>
+                    <span>进入 MatchStats 交互看盘</span>
+                </a>
+                <button class="btn-action btn-outline" onclick="window.print()">
+                    <i class="ph-bold ph-download-simple"></i>
+                    <span>保存高清长图</span>
+                </button>
+            </div>
+            <div class="attribution-text">
+                数据源: Opta 官方动态模型 · 由 OpuAs 量化中台提炼清洗 · 供专业主播与高阶赛事研判专用
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyCasterText() {
+            const text = document.getElementById('casterCue').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById('copyBtnText');
+                btn.innerText = '已复制到剪贴板!';
+                setTimeout(() => {
+                    btn.innerText = '一键复制口播';
+                }, 2000);
+            }).catch(err => {
+                alert('复制失败，请手动长按复制');
+            });
+        }
+    </script>
+</body>
+
+</html>
