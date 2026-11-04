@@ -30,6 +30,12 @@ async def dashboard():
     return FileResponse(os.path.join(APP_DIR, "static", "index.html"))
 
 
+@web_router.get("/api/index.py")
+async def vercel_entry_landing():
+    """兼容旧 Vercel 重写配置兜底"""
+    return FileResponse(os.path.join(APP_DIR, "static", "landing.html"))
+
+
 @web_router.get("/robots.txt")
 async def robots_txt():
     return FileResponse(os.path.join(PROJECT_ROOT, "robots.txt"), media_type="text/plain")

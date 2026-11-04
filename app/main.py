@@ -121,8 +121,8 @@ async def get_predictions(request: Request):
 @app.middleware("http")
 async def api_key_middleware(request: Request, call_next):
     """API 访问控制中间件：严格只读策略"""
-    # 非 API 请求直接放行
-    if not request.url.path.startswith("/api"):
+    # 非 API 请求直接放行（兼容 Vercel 入口）
+    if not request.url.path.startswith("/api") or request.url.path == "/api/index.py":
         return await call_next(request)
 
     # 1. 核心安全策略：禁止所有“写”操作

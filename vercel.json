@@ -6,6 +6,26 @@
   },
   "rewrites": [
     {
+      "source": "/dashboard",
+      "destination": "/app/static/index.html"
+    },
+    {
+      "source": "/dashboard/",
+      "destination": "/app/static/index.html"
+    },
+    {
+      "source": "/matchstats",
+      "destination": "/app/static/index.html"
+    },
+    {
+      "source": "/matchstats/",
+      "destination": "/app/static/index.html"
+    },
+    {
+      "source": "/static/:match*",
+      "destination": "/app/static/:match*"
+    },
+    {
       "source": "/api/v1/fd/:match*",
       "destination": "http://162.35.175.153:8792/api/v1/fd/:match*"
     },
@@ -18,8 +38,8 @@
       "destination": "http://162.35.175.153:8792/api/v1/logs"
     },
     {
-      "source": "/(.*)",
-      "destination": "/api/index.py"
+      "source": "/api/v1/health",
+      "destination": "http://162.35.175.153:8792/api/v1/health"
     }
   ]
 }

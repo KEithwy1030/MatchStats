@@ -113,6 +113,17 @@ async def test_api_endpoints_without_database():
         assert res.status_code == 200
         assert "MatchStats" in res.text
 
+        # 7. Landing page (Issue #16)
+        res_landing = await client.get("/")
+        assert res_landing.status_code == 200
+        assert "KEithWYong@Gmail.com" in res_landing.text
+        assert "t.me/oldkclub" in res_landing.text
+
+        # 8. Vercel fallback entry (Issue #16)
+        res_fallback = await client.get("/api/index.py")
+        assert res_fallback.status_code == 200
+        assert "KEithWYong@Gmail.com" in res_fallback.text
+
 @pytest.mark.asyncio
 async def test_issue_15_match_status_and_nov3_matches():
     """验证 Issue #15：已结束比赛状态标记为 FINISHED，且具备 11月3日 当天比赛"""
