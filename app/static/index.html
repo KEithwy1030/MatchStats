@@ -39,8 +39,9 @@
                     <i class="ph ph-globe-hemisphere-west"></i>
                     <span>欧洲赛事数据</span>
                 </div>
+                <!-- 中国竞彩数据（已停用前端展示，逻辑代码完整保留） -->
                 <div class="nav-item" :class="{ active: activeSource === 'sporttery' }"
-                    @click="activeSource = 'sporttery'">
+                    @click="activeSource = 'sporttery'" style="display: none !important;">
                     <i class="ph ph-flag-banner"></i>
                     <span>中国竞彩数据</span>
                 </div>
@@ -89,7 +90,8 @@
                         <div class="stat-value">{{ stats.fd_matches }}</div>
                         <div class="stat-sub">欧洲赛事总库存</div>
                     </div>
-                    <div class="stat-card card">
+                    <!-- 竞彩统计卡片（已停用前端展示，代码保留） -->
+                    <div class="stat-card card" style="display: none !important;">
                         <div class="stat-value">{{ stats.sporttery_matches }}</div>
                         <div class="stat-sub">竞彩官网记录数</div>
                     </div>
@@ -177,6 +179,18 @@
                                             }">
                                             {{ getStatusText(m.status) }}
                                         </span>
+                                        <!-- Opta AI Win Probability Compact Pill -->
+                                        <div v-if="m.prediction" style="margin-top:5px; display:flex; flex-direction:column; align-items:flex-end; gap:3px;">
+                                            <div style="font-size:10px; font-weight:700; color:#38bdf8; display:flex; align-items:center; gap:3px; font-family:var(--font-mono);">
+                                                <i class="ph-fill ph-brain" style="font-size:11px;"></i>
+                                                <span>{{ m.prediction.home_prob }}% / {{ m.prediction.away_prob }}%</span>
+                                            </div>
+                                            <div style="display:flex; width:72px; height:3px; border-radius:2px; overflow:hidden; background:rgba(255,255,255,0.1);" :title="'主胜 ' + m.prediction.home_prob + '% | 平 ' + m.prediction.draw_prob + '% | 客胜 ' + m.prediction.away_prob + '%'">
+                                                <div :style="{ width: m.prediction.home_prob + '%', background: '#38bdf8' }"></div>
+                                                <div :style="{ width: m.prediction.draw_prob + '%', background: '#94a3b8' }"></div>
+                                                <div :style="{ width: m.prediction.away_prob + '%', background: '#f43f5e' }"></div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </template>
 

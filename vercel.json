@@ -3,5 +3,23 @@
     "api/index.py": {
       "includeFiles": "data/**"
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/api/v1/fd/:match*",
+      "destination": "http://162.35.175.153:8792/api/v1/fd/:match*"
+    },
+    {
+      "source": "/api/v1/stats",
+      "destination": "http://162.35.175.153:8792/api/v1/stats"
+    },
+    {
+      "source": "/api/v1/logs",
+      "destination": "http://162.35.175.153:8792/api/v1/logs"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/api/index.py"
+    }
+  ]
 }
