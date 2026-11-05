@@ -25,8 +25,21 @@ async def landing():
 
 
 @web_router.get("/dashboard")
+@web_router.get("/dashboard/")
+@web_router.get("/matchstats")
+@web_router.get("/matchstats/")
+@web_router.get("/app/static/index.html")
 async def dashboard():
     """实时数据看板（原 Dashboard）"""
+    return FileResponse(os.path.join(APP_DIR, "static", "index.html"))
+
+
+@web_router.get("/matchstats/{file_name}")
+async def matchstats_static(file_name: str):
+    """支持 /matchstats/ 路径下的静态 HTML（如 briefing.html 等）"""
+    file_path = os.path.join(APP_DIR, "static", file_name)
+    if os.path.exists(file_path):
+        return FileResponse(file_path)
     return FileResponse(os.path.join(APP_DIR, "static", "index.html"))
 
 

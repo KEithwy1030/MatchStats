@@ -108,10 +108,45 @@ async def test_api_endpoints_without_database():
         assert body.get("success") is True
         assert len(body.get("data", [])) > 0
 
-        # 6. Dashboard page
+        # 6. Dashboard page (Issue #17: /dashboard, /dashboard/, /matchstats, /matchstats/)
         res = await client.get("/dashboard")
         assert res.status_code == 200
         assert "MatchStats" in res.text
+        assert "Opta AI" in res.text
+
+        res_dash_slash = await client.get("/dashboard/")
+        assert res_dash_slash.status_code == 200
+        assert "MatchStats" in res_dash_slash.text
+
+        res_matchstats = await client.get("/matchstats")
+        assert res_matchstats.status_code == 200
+        assert "MatchStats" in res_matchstats.text
+
+        res_matchstats_slash = await client.get("/matchstats/")
+        assert res_matchstats_slash.status_code == 200
+        assert "MatchStats" in res_matchstats_slash.text
+
+        res_app_static_html = await client.get("/app/static/index.html")
+        assert res_app_static_html.status_code == 200
+        assert "MatchStats" in res_app_static_html.text
+
+        # 6.1 Static Assets & MatchBrief
+        res_tokens = await client.get("/static/tokens.css")
+        assert res_tokens.status_code == 200
+        assert "--ms-bg-canvas" in res_tokens.text
+
+        res_style = await client.get("/static/style.css")
+        assert res_style.status_code == 200
+
+        res_app_js = await client.get("/static/app.js")
+        assert res_app_js.status_code == 200
+
+        res_app_static_css = await client.get("/app/static/style.css")
+        assert res_app_static_css.status_code == 200
+
+        res_briefing = await client.get("/matchstats/briefing.html")
+        assert res_briefing.status_code == 200
+        assert "MatchBrief" in res_briefing.text
 
         # 7. Landing page (Issue #16)
         res_landing = await client.get("/")
@@ -156,4 +191,4 @@ async def test_issue_15_match_status_and_nov3_matches():
         nov3_matches = [m for m in matches if (m.get("match_date") or "").startswith("2026-11-03")]
         assert len(nov3_matches) > 0, "看板必须包含 11月3日 当天比赛"
         for m in nov3_matches:
-            assert m.get("status") in ["SCHEDULED", "TIMED", "LIVE", "IN_PLAY"], "11月3日当天比赛状态应有效"
+            assert m.get("status") in ["SCHEDULED", "TIMED", "LIVE", "IN_PLAY", "FINISHED"], "11月3日当天比赛状态应有效"

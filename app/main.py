@@ -202,9 +202,10 @@ static_dir = os.path.join(os.path.dirname(__file__), "static")
 if not os.environ.get("VERCEL") and not os.path.exists(static_dir):
     os.makedirs(static_dir)
 
-# 即使文件夹不存在，在 Vercel 上也要挂载，否则容易报错
+# 挂载静态文件目录（兼容 /static 与 /app/static 两种访问路径）
 if os.path.exists(static_dir):
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
+    app.mount("/app/static", StaticFiles(directory=static_dir), name="app_static")
 
 
 def main():
