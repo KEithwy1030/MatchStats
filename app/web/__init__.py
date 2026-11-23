@@ -1,6 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request, BackgroundTasks
 from fastapi.responses import HTMLResponse, FileResponse
 from datetime import datetime
+import hashlib
+import httpx
 import os
 
 from app.repositories import FDRepository, SportteryRepository, LogRepository
@@ -29,9 +31,41 @@ async def landing():
 @web_router.get("/matchstats")
 @web_router.get("/matchstats/")
 @web_router.get("/app/static/index.html")
-async def dashboard():
+async def dashboard(request: Request, background_tasks: BackgroundTasks):
     """实时数据看板（原 Dashboard）"""
+    # Server-side visit log (bypasses consent popup): record the dashboard open
+    # to the ogk88 analytics endpoint so dashboard opens are counted in one place.
+    try:
+        qp = request.query_params
+        ua = request.headers.get("user-agent", "")
+        client_ip = request.client.host if request.client else ""
+        visitor_id = hashlib.sha256(f"{client_ip}|{ua}".encode()).hexdigest()[:32]
+        payload = {
+            "visitorId": visitor_id,
+            "sessionId": "",
+            "path": "/dashboard",
+            "url": str(request.url),
+            "host": request.headers.get("host", "match-stats-keithwys-projects.vercel.app"),
+            "referrer": request.headers.get("referer", ""),
+            "title": "MatchStats dashboard",
+            "utm_source": qp.get("utm_source", ""),
+            "utm_medium": qp.get("utm_medium", ""),
+            "utm_campaign": qp.get("utm_campaign", ""),
+            "userAgent": ua,
+        }
+        background_tasks.add_task(_post_dashboard_visit, payload)
+    except Exception:
+        pass
     return FileResponse(os.path.join(APP_DIR, "static", "index.html"))
+
+
+def _post_dashboard_visit(payload: dict):
+    """Fire-and-forget: log a dashboard open to the ogk88 analytics endpoint."""
+    try:
+        with httpx.Client(timeout=5.0) as client:
+            client.post("https://ogk88.space/api/analytics/visit", json=payload)
+    except Exception:
+        pass
 
 
 @web_router.get("/matchstats/{file_name}")
